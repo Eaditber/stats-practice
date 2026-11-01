@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שאלות בגרות: הגשה</title>
+<style>
+  :root {
+    --bg: #eef1f5; --paper: #ffffff; --ink: #1b2230; --muted: #5b6475;
+    --head: #12395c; --accent: #1f5f99; --soft: #e6eef7; --line: #c9d1dc;
+    --barc: #33d0f0; --barc2: #f2a65a; --grid: #e3e7ee; --src: #fbf8ef; --srcline: #e5dcc0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161d; --paper: #1b2029; --ink: #e7eaf0; --muted: #a0a8b7;
+      --head: #9cc4ea; --accent: #8db9e6; --soft: #233142; --line: #3a4250;
+      --barc: #2bb8d6; --barc2: #d98b3f; --grid: #2a313c; --src: #24221c; --srcline: #4a4433;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Assistant", "Segoe UI", Arial, sans-serif; font-size: 17px; line-height: 1.65; }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 16px 64px; }
+  .paper { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 28px 32px; margin-bottom: 28px; }
+  .top h1 { font-size: 1.5rem; color: var(--head); margin: 0 0 6px; }
+  .top p { margin: 4px 0; }
+  .fict { color: var(--muted); font-style: italic; font-size: .85rem; }
+  .parthead { background: var(--soft); border-radius: 8px; padding: 10px 16px; margin-bottom: 18px; font-size: 1.05rem; }
+  .parthead b { color: var(--head); }
+  .lead { font-weight: 700; margin: 14px 0 8px; }
+  .fig { margin: 24px 0 8px; }
+  .fig h2 { font-size: 1.5rem; color: var(--head); margin: 0 0 4px; }
+  .chart { width: 100%; max-width: 680px; display: block; margin: 0 auto; color: var(--ink); }
+  details.src { background: var(--src); border: 2px solid var(--srcline); border-inline-start: 6px solid #d9a521; border-radius: 8px; margin: 24px 0; }
+  details.src summary { cursor: pointer; padding: 12px 16px; font-weight: 800; font-size: 1.1rem; color: var(--head); }
+  details.src .body { padding: 0 16px 12px; }
+  details.src h3 { font-size: 1rem; margin: 12px 0 2px; }
+  details.src p { margin: 0 0 6px; font-size: .95rem; }
+  .datawrap { overflow-x: auto; margin-top: 8px; }
+  table.data { border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 4px 10px; text-align: center; }
+  table.data th { background: var(--soft); }
+  button { font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; border: 0; border-radius: 7px;
+    padding: 7px 14px; background: var(--accent); color: var(--paper); }
+  button.ok { background: #2e8b57; }
+  .q { margin: 28px 0; }
+  .q .num { font-weight: 800; color: var(--head); margin-inline-end: 6px; }
+  .q p { margin: 0 0 6px; }
+  .pts { color: var(--muted); font-size: .85rem; display: block; margin-top: 2px; }
+  .whatif { display: inline-block; background: #fde8d4; color: #8a3b0b; font-size: .8rem; font-weight: 700; padding: 1px 10px; border-radius: 999px; margin-inline-end: 6px; }
+  textarea { width: 100%; min-height: 90px; font: inherit; font-size: .95rem; padding: 8px 10px; resize: vertical;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  textarea.short { min-height: 50px; }
+  .grid { display: grid; gap: 8px; }
+  .grid.g3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.g4 { grid-template-columns: repeat(4, 1fr); }
+  .grid label { font-size: .9rem; font-weight: 600; }
+  .grid textarea { min-height: 80px; }
+  @media (max-width: 640px) { .paper { padding: 18px 14px; } .grid.g3, .grid.g4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .grid.g3, .grid.g4 { grid-template-columns: 1fr; } }
+  details.ans { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+  details.ans summary { cursor: pointer; padding: 6px 12px; font-weight: 700; font-size: .92rem; color: var(--accent); list-style: none; }
+  details.ans summary::-webkit-details-marker { display: none; }
+  details.ans summary::before { content: "◀ "; font-size: .75rem; }
+  details.ans[open] summary::before { content: "▼ "; }
+  details.ans[open] summary .hide { display: inline; } details.ans summary .hide { display: none; }
+  details.ans[open] summary .show { display: none; }
+  details.ans .a { padding: 0 14px 10px; font-size: .95rem; }
+  details.ans .a p { margin: 0 0 6px; } details.ans .a ul { margin: 0 0 6px; padding-inline-start: 1.2em; }
+  .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  @media print { details.ans { display: none; } }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .who { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 14px; }
+  .who label { font-weight: 700; font-size: .95rem; display: flex; flex-direction: column; gap: 4px; }
+  .who input { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  .who input.err { border-color: #c0392b; box-shadow: 0 0 0 2px #f5c6c0; }
+  @media (max-width: 520px) { .who { grid-template-columns: 1fr; } }
+  .submitbox h2 { color: var(--head); font-size: 1.3rem; margin: 0 0 6px; }
+  .submitbox .note { color: var(--muted); font-size: .9rem; }
+  button.big { font-size: 1.05rem; padding: 10px 28px; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  button:disabled { opacity: .6; cursor: default; }
+  .msg { font-weight: 700; min-height: 1.4em; margin: 12px 0 0; }
+  .msg.ok { color: #2e7d4f; } .msg.bad { color: #c0392b; } .msg.warn { color: #a05a00; }
+  body:not(.submitted) details.ans { display: none; }
+  .tools small { color: var(--muted); }
+  @media print {
+    body { background: #fff; } main { padding: 0; } .paper { border: 0; break-after: page; }
+    .tools, button { display: none; } details.src, .fig { break-inside: avoid; } textarea { border-color: #999; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<div class="paper top">
+  <h1>ממוצע, חציון ושכיח: שאלות בסגנון בגרות</h1>
+  <p>ענו על שתי השאלות. בשאלות שדורשות חישוב, כתבו את דרך החישוב. מותר להשתמש במחשבון או ב-Excel.</p>
+  <p>סעיפים שמסומנים <span class="whatif">מה יקרה אם</span> בודקים איך המדדים משתנים כשהנתונים משתנים. בהם אין צורך לחשב, אלא לנמק.</p>
+  <p class="fict">כל הנתונים, המקומות והדמויות בדויים ונבנו לצורכי לימוד.</p>
+  <div class="who">
+    <label>שם מלא<input type="text" id="stName" autocomplete="name" placeholder="שם פרטי ושם משפחה"></label>
+    <label>כיתה<input type="text" id="stClass" placeholder="למשל י״א2"></label>
+  </div>
+</div>
+
+<!-- ===================== שאלה 1 ===================== -->
+<div class="paper">
+  <div class="parthead"><b>שאלה 1: הקפיטריה</b> (25 נקודות)</div>
+  <p class="lead">באיור א' מוצג מספר הכריכים שנמכרו בכל יום בקפיטריה של בית הספר, במשך שני שבועות לימודים (10 ימים).</p>
+
+  <div class="fig">
+    <h2>איור א'</h2>
+    <svg class="chart" id="q1fig" role="img" aria-label="גרף עמודות: מספר הכריכים שנמכרו בכל יום במשך שבועיים"></svg>
+  </div>
+
+  <details class="src" open>
+    <summary>מקורות מידע (לחצו כדי לסגור או לפתוח)</summary>
+    <div class="body">
+      <h3>מקור 1: הודעה מהנהלת בית הספר</h3>
+      <p>"ביום רביעי בשבוע השני הייתה תקלה במקרר של הקפיטריה. הקפיטריה נפתחה רק בהפסקה האחרונה, ומכרה כריכים רק לתלמידים שהגיעו אליה."</p>
+      <h3>מקור 2: מתוך שיחה עם מנהלת הקפיטריה</h3>
+      <p>"בשבוע הבא נתחיל מבצע: כריך ושתייה במחיר מוזל. לפי הניסיון שלנו, בכל יום של מבצע נמכרים בערך 10 כריכים יותר מבדרך כלל."</p>
+      <p style="margin-top:10px"><b>הנתונים מהאיור בטבלה</b> (אפשר להעתיק ל-Excel)</p>
+      <div class="datawrap"><table class="data" id="q1table"></table></div>
+      <p style="margin-top:8px"><button type="button" data-copy="q1">העתקת הטבלה ל-Excel</button></p>
+    </div>
+  </details>
+
+  <div class="q">
+    <p><span class="num">1.</span>באיזה יום נמכרו הכי הרבה כריכים, ובאיזה יום הכי מעט? מהו הטווח של מספר הכריכים?
+      <span class="pts">(4 נקודות)</span></p>
+    <textarea class="short" data-k="q1_1" data-col="ש1.1 יום מקסימום/מינימום וטווח"></textarea>
+  </div>
+
+  <div class="q">
+    <p><span class="num">2.</span>חשבו את הממוצע, החציון והשכיח של מספר הכריכים שנמכרו ב-10 הימים. כתבו את דרך החישוב.
+      <span class="pts">(6 נקודות)</span></p>
+    <textarea data-k="q1_2" data-col="ש1.2 ממוצע חציון שכיח"></textarea>
+  </div>
+
+  <div class="q">
+    <p><span class="num">3.</span><span class="whatif">מה יקרה אם</span>חוקרת א' חישבה את המדדים לכל 10 הימים. חוקר ב' חישב אותם בלי יום רביעי בשבוע השני.</p>
+    <p>ציינו לגבי <b>כל</b> מדד אם הוא יגדל, יקטן או לא ישתנה אצל חוקר ב', והסבירו את הסיבה. היעזרו במקור 1. אין צורך לחשב.
+      <span class="pts">(6 נקודות)</span></p>
+    <div class="grid g4">
+      <label>ממוצע<textarea data-k="q1_3a" data-col="ש1.3 ממוצע"></textarea></label>
+      <label>חציון<textarea data-k="q1_3b" data-col="ש1.3 חציון"></textarea></label>
+      <label>שכיח<textarea data-k="q1_3c" data-col="ש1.3 שכיח"></textarea></label>
+      <label>טווח<textarea data-k="q1_3d" data-col="ש1.3 טווח"></textarea></label>
+    </div>
+  </div>
+
+  <div class="q">
+    <p><span class="num">4.</span><span class="whatif">מה יקרה אם</span>לפי מקור 2, בשבוע הבא יימכרו בכל יום 10 כריכים יותר. נניח שזה יקרה בכל אחד מ-10 הימים שבאיור.</p>
+    <p>מה יהיו הממוצע, החציון והשכיח החדשים? ומה יקרה לטווח? הסבירו בלי לחשב מחדש את כל הנתונים.
+      <span class="pts">(5 נקודות)</span></p>
+    <textarea data-k="q1_4" data-col="ש1.4 תוספת 10 לכל יום"></textarea>
+  </div>
+
+  <div class="q">
+    <p><span class="num">5.</span>מנהלת הקפיטריה צריכה להחליט כמה כריכים להכין ביום רגיל. היא רוצה מספר אחד שמתאר יום רגיל. באיזה מדד כדאי לה להשתמש: ממוצע, חציון או שכיח? נמקו בעזרת הנתונים.
+      <span class="pts">(4 נקודות)</span></p>
+    <textarea data-k="q1_5" data-col="ש1.5 איזה מדד למנהלת"></textarea>
+  </div>
+</div>
+
+<!-- ===================== שאלה 2 ===================== -->
+<div class="paper">
+  <div class="parthead"><b>שאלה 2: ציוני המבחן</b> (25 נקודות)</div>
+  <p class="lead">באיורים ב' ו-ג' מוצגים הציונים במבחן במתמטיקה של 12 תלמידים בכיתה י״א1 ושל 12 תלמידים בכיתה י״א2. כל עמודה היא תלמיד אחד.</p>
+
+  <div class="fig">
+    <h2>איור ב'</h2>
+    <svg class="chart" id="q2figA" role="img" aria-label="גרף עמודות: ציוני 12 התלמידים בכיתה י״א1"></svg>
+  </div>
+  <div class="fig">
+    <h2>איור ג'</h2>
+    <svg class="chart" id="q2figB" role="img" aria-label="גרף עמודות: ציוני 12 התלמידים בכיתה י״א2"></svg>
+  </div>
+
+  <details class="src" open>
+    <summary>מקורות מידע (לחצו כדי לסגור או לפתוח)</summary>
+    <div class="body">
+      <h3>מקור 1: מתוך הודעת המורה להורים</h3>
+      <p>"שתי הכיתות הצליחו במבחן באותה מידה: הממוצע בשתיהן הוא 80."</p>
+      <h3>מקור 2: מתוך יומן הכיתה של י״א2</h3>
+      <p>"שני תלמידים (תלמיד 2 ותלמיד 7) היו חולים בשבוע שלפני המבחן ולא הספיקו ללמוד. הם יוכלו לגשת למועד ב׳."</p>
+      <p style="margin-top:10px"><b>הנתונים מהאיורים בטבלה</b> (אפשר להעתיק ל-Excel)</p>
+      <div class="datawrap"><table class="data" id="q2table"></table></div>
+      <p style="margin-top:8px"><button type="button" data-copy="q2">העתקת הטבלה ל-Excel</button></p>
+    </div>
+  </details>
+
+  <div class="q">
+    <p><span class="num">1.</span>חשבו את החציון ואת השכיח של הציונים בכל אחת מהכיתות. בדקו גם שהממוצע בשתיהן הוא באמת 80.
+      <span class="pts">(6 נקודות)</span></p>
+    <textarea data-k="q2_1" data-col="ש2.1 חציון ושכיח בכל כיתה"></textarea>
+  </div>
+
+  <div class="q">
+    <p><span class="num">2.</span>המורה כתבה להורים ששתי הכיתות הצליחו באותה מידה (מקור 1). האם אתם מסכימים? נמקו בעזרת החציון, השכיח ומקור 2.
+      <span class="pts">(5 נקודות)</span></p>
+    <textarea data-k="q2_2" data-col="ש2.2 האם הכיתות הצליחו באותה מידה"></textarea>
+  </div>
+
+  <div class="q">
+    <p><span class="num">3.</span><span class="whatif">מה יקרה אם</span>שני התלמידים החולים מי״א2 ניגשו למועד ב׳. תלמיד 2 קיבל 80 ותלמיד 7 קיבל 90, והציונים החדשים מחליפים את הציונים הקודמים שלהם.</p>
+    <p>ציינו לגבי <b>כל</b> מדד של י״א2 אם הוא יגדל, יקטן או לא ישתנה, והסבירו. אחר כך חשבו את הממוצע החדש.
+      <span class="pts">(6 נקודות)</span></p>
+    <div class="grid g3">
+      <label>ממוצע<textarea data-k="q2_3a" data-col="ש2.3 ממוצע"></textarea></label>
+      <label>חציון<textarea data-k="q2_3b" data-col="ש2.3 חציון"></textarea></label>
+      <label>שכיח<textarea data-k="q2_3c" data-col="ש2.3 שכיח"></textarea></label>
+    </div>
+  </div>
+
+  <div class="q">
+    <p><span class="num">4.</span><span class="whatif">מה יקרה אם</span>תלמידה חדשה הצטרפה לכיתה י״א1 וקיבלה במבחן 54. עכשיו יש בכיתה 13 תלמידים.</p>
+    <p>מה יקרה לממוצע, לחציון ולשכיח של י״א1? הסבירו לגבי כל מדד.
+      <span class="pts">(4 נקודות)</span></p>
+    <textarea data-k="q2_4" data-col="ש2.4 תלמידה חדשה 54"></textarea>
+  </div>
+
+  <div class="q">
+    <p><span class="num">5.</span>על פי האיורים ב' ו-ג' (לפני מועד ב׳), ציינו <b>שתי</b> נקודות דמיון ו<b>שני</b> הבדלים בין הציונים בשתי הכיתות.
+      <span class="pts">(4 נקודות)</span></p>
+    <textarea data-k="q2_5" data-col="ש2.5 דמיון והבדלים"></textarea>
+  </div>
+</div>
+
+<div class="paper submitbox">
+  <h2>הגשה</h2>
+  <p>בדקו שמילאתם שם, כיתה ותשובות, ולחצו על ״הגשה״. התשובות יישלחו למורה.</p>
+  <p class="note">אחרי ההגשה יופיעו מתחת לכל סעיף כפתורים ״הצגת תשובה״, כדי שתוכלו לבדוק את עצמכם.</p>
+  <div class="tools">
+    <button type="button" id="submitBtn" class="big">הגשה</button>
+    <button type="button" class="ghost" onclick="window.print()">הדפסה / שמירה כ-PDF</button>
+  </div>
+  <p id="submitMsg" class="msg" role="status" aria-live="polite"></p>
+</div>
+</main>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function fmt(n) { return n.toLocaleString("en-US"); }
+  function el(parent, tag, attrs, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    parent.appendChild(e); return e;
+  }
+  function barChart(svg, o) {
+    var W = 680, H = o.groups ? 420 : 400, m = { l: 78, r: 20, t: 64, b: o.groups ? 84 : 62 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("direction", "ltr");
+    var g = el(svg, "g", { "font-family": "Assistant, Segoe UI, Arial, sans-serif", fill: "currentColor" });
+    el(g, "text", { x: W / 2, y: 22, "text-anchor": "middle", "font-size": 16, "font-weight": 700 }, o.title);
+    var y = function (v) { return m.t + ih - v / o.max * ih; };
+    var step = iw / o.values.length, x = function (i) { return m.l + step * (i + 0.5); };
+    for (var v = 0; v <= o.max; v += o.tick) {
+      el(g, "line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: "var(--grid)" });
+      el(g, "line", { x1: m.l - 5, x2: m.l, y1: y(v), y2: y(v), stroke: "currentColor" });
+      el(g, "text", { x: m.l - 9, y: y(v) + 4, "text-anchor": "end", "font-size": 12 }, fmt(v));
+    }
+    el(g, "line", { x1: m.l, x2: m.l, y1: m.t - 8, y2: m.t + ih, stroke: "currentColor", "stroke-width": 1.5 });
+    el(g, "line", { x1: m.l, x2: m.l + iw + 6, y1: m.t + ih, y2: m.t + ih, stroke: "currentColor", "stroke-width": 1.5 });
+    el(g, "text", { "text-anchor": "middle", "font-size": 13, transform: "translate(18," + (m.t + ih / 2) + ") rotate(-90)" }, o.yTitle);
+    el(g, "text", { x: m.l + iw / 2, y: H - 10, "text-anchor": "middle", "font-size": 13 }, o.xTitle);
+    var bw = step * 0.62;
+    o.values.forEach(function (v, i) {
+      el(g, "rect", { x: x(i) - bw / 2, y: y(v), width: bw, height: m.t + ih - y(v), fill: o.color || "var(--barc)" });
+      el(g, "text", { x: x(i), y: y(v) - 6, "text-anchor": "middle", "font-size": 12, "font-weight": 600 }, fmt(v));
+      el(g, "text", { x: x(i), y: m.t + ih + 18, "text-anchor": "middle", "font-size": 12 }, o.labels[i]);
+    });
+    (o.groups || []).forEach(function (gr) {
+      var x1 = m.l + step * gr.from + 6, x2 = m.l + step * (gr.to + 1) - 6, yy = m.t + ih + 32;
+      el(g, "line", { x1: x1, x2: x2, y1: yy, y2: yy, stroke: "currentColor", "stroke-width": 1 });
+      el(g, "text", { x: (x1 + x2) / 2, y: yy + 17, "text-anchor": "middle", "font-size": 13, "font-weight": 600 }, gr.label);
+    });
+  }
+
+  var days = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "א׳", "ב׳", "ג׳", "ד׳", "ה׳"];
+  var dayNames = ["ראשון", "שני", "שלישי", "רביעי", "חמישי"];
+  var q1 = [80, 90, 85, 90, 75, 85, 90, 95, 20, 75];
+  var A = [80, 65, 90, 80, 100, 75, 80, 50, 85, 80, 95, 80];
+  var B = [90, 20, 95, 85, 90, 100, 30, 90, 85, 90, 95, 90];
+  var nums = A.map(function (_, i) { return String(i + 1); });
+
+  barChart(document.getElementById("q1fig"), { title: "מספר הכריכים שנמכרו בכל יום", values: q1, labels: days,
+    max: 100, tick: 10, yTitle: "מספר הכריכים", xTitle: "היום בשבוע",
+    groups: [{ label: "שבוע 1", from: 0, to: 4 }, { label: "שבוע 2", from: 5, to: 9 }] });
+  barChart(document.getElementById("q2figA"), { title: "ציוני המבחן בכיתה י״א1", values: A, labels: nums,
+    max: 100, tick: 10, yTitle: "ציון", xTitle: "מספר התלמיד" });
+  barChart(document.getElementById("q2figB"), { title: "ציוני המבחן בכיתה י״א2", values: B, labels: nums,
+    max: 100, tick: 10, yTitle: "ציון", xTitle: "מספר התלמיד", color: "var(--barc2)" });
+
+  var tables = {
+    q1: [["שבוע", "יום", "כריכים שנמכרו"]].concat(q1.map(function (v, i) { return [i < 5 ? 1 : 2, dayNames[i % 5], v]; })),
+    q2: [["מספר תלמיד", "י״א1", "י״א2"]].concat(A.map(function (v, i) { return [i + 1, v, B[i]]; }))
+  };
+  Object.keys(tables).forEach(function (k) {
+    var t = document.getElementById(k + "table");
+    tables[k].forEach(function (r, ri) {
+      var tr = document.createElement("tr");
+      r.forEach(function (c) { var cell = document.createElement(ri ? "td" : "th"); cell.textContent = c; tr.appendChild(cell); });
+      t.appendChild(tr);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-copy]"), function (btn) {
+    var label = btn.textContent;
+    var tsv = tables[btn.dataset.copy].map(function (r) { return r.join("\t"); }).join("\r\n");
+    function done(ok) {
+      btn.textContent = ok ? "הטבלה הועתקה" : "ההעתקה נכשלה. סמנו את הטבלה והעתיקו ידנית";
+      btn.classList.toggle("ok", ok);
+      setTimeout(function () { btn.textContent = label; btn.classList.remove("ok"); }, 2500);
+    }
+    function fallback() {
+      var ta = document.createElement("textarea"); ta.value = tsv;
+      ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    btn.addEventListener("click", function () {
+      try {
+        if (navigator.clipboard) navigator.clipboard.writeText(tsv).then(function () { done(true); }, fallback);
+        else fallback();
+      } catch (e) { fallback(); }
+    });
+  });
+
+  function f(s) { return '<span class="ltr">' + s + '</span>'; }
+  var ANSWERS = [
+    // שאלה 1
+    "<p>הכי הרבה: יום שלישי בשבוע 2 (95 כריכים). הכי מעט: יום רביעי בשבוע 2 (20 כריכים).</p><p>טווח: " + f("95 − 20 = 75") + "</p>",
+    "<p>ממוינים: 20, 75, 75, 80, 85, 85, 90, 90, 90, 95</p><ul><li>ממוצע: " + f("785 ÷ 10 = 78.5") + "</li><li>חציון: יש 10 ערכים, אז לוקחים את הממוצע של החמישי והשישי: " + f("(85 + 85) ÷ 2 = 85") + "</li><li>שכיח: 90, מופיע 3 פעמים.</li></ul>",
+    "<p>ביום רביעי בשבוע 2 הקפיטריה כמעט לא פעלה (מקור 1), ולכן 20 הוא ערך חריג ונמוך.</p><ul><li><b>ממוצע: יגדל</b> (78.5 ← 85). הוצאנו ערך נמוך מאוד שמשך את הממוצע למטה.</li><li><b>חציון: לא ישתנה</b> (85). עם 9 ערכים החציון הוא הערך החמישי, והוא עדיין 85.</li><li><b>שכיח: לא ישתנה</b> (90). לא הוצאנו אף 90.</li><li><b>טווח: יקטן</b> (75 ← 20). המינימום עולה מ-20 ל-75.</li></ul>",
+    "<p>כל הערכים עולים ב-10 והסדר ביניהם לא משתנה. לכן כל אחד מהמדדים עולה ב-10:</p><ul><li>ממוצע: 88.5</li><li>חציון: 95</li><li>שכיח: 100</li></ul><p>הטווח לא משתנה (75), כי גם המקסימום וגם המינימום עלו ב-10.</p>",
+    "<p>עדיף החציון (85) או השכיח (90). הממוצע (78.5) מושפע מיום רביעי החריג, שלא מייצג יום רגיל. החציון מתאר יום טיפוסי ולא מושפע מהיום הזה. גם השכיח מתאים: 90 הוא המספר שנמכר הכי הרבה פעמים.</p><p>תשובה נוספת שמתקבלת: ממוצע בלי יום רביעי (85), אם מסבירים שהיום הזה לא היה רגיל.</p>",
+    // שאלה 2
+    "<ul><li>י״א1, ממוינים: 50, 65, 75, 80, 80, 80, 80, 80, 85, 90, 95, 100. חציון " + f("(80 + 80) ÷ 2 = 80") + ", שכיח 80 (5 פעמים), ממוצע " + f("960 ÷ 12 = 80") + ".</li><li>י״א2, ממוינים: 20, 30, 85, 85, 90, 90, 90, 90, 90, 95, 95, 100. חציון " + f("(90 + 90) ÷ 2 = 90") + ", שכיח 90 (5 פעמים), ממוצע " + f("960 ÷ 12 = 80") + ".</li></ul>",
+    "<p>לא. הממוצע אכן זהה, אבל בי״א2 החציון והשכיח הם 90, לעומת 80 בי״א1. כלומר תלמיד טיפוסי בי״א2 קיבל ציון גבוה יותר.</p><p>הממוצע של י״א2 נמוך מהחציון בגלל שני ציונים נמוכים מאוד (20 ו-30) של תלמידים שהיו חולים (מקור 2). אלה ערכים חריגים שמושכים את הממוצע למטה.</p>",
+    "<ul><li><b>ממוצע: יגדל</b>. הסכום גדל ב-120 (60 + 60), ולכן " + f("1,080 ÷ 12 = 90") + ".</li><li><b>חציון: לא ישתנה</b> (90). אחרי מיון, הערכים השישי והשביעי הם עדיין 90 ו-90.</li><li><b>שכיח: לא ישתנה</b> (90). הוא אפילו מופיע עכשיו 6 פעמים, כי תלמיד 7 קיבל 90.</li></ul><p>שימו לב: עכשיו הממוצע שווה לחציון, כי הערכים החריגים נעלמו.</p>",
+    "<ul><li><b>ממוצע: יקטן</b>. 54 קטן מהממוצע (80), ולכן מושך אותו למטה: " + f("1,014 ÷ 13 = 78") + ".</li><li><b>חציון: לא ישתנה</b>. עם 13 ערכים החציון הוא הערך השביעי, והוא עדיין 80.</li><li><b>שכיח: לא ישתנה</b>. 80 עדיין מופיע 5 פעמים.</li></ul>",
+    "<p><b>דמיון</b> (שתיים מתוך): הממוצע בשתי הכיתות הוא 80. בשתיהן הציון הגבוה ביותר הוא 100. בשתיהן השכיח מופיע 5 פעמים.</p><p><b>הבדלים</b> (שניים מתוך): החציון והשכיח בי״א2 (90) גבוהים מאשר בי״א1 (80). בי״א2 יש שני ציונים חריגים ונמוכים מאוד (20 ו-30), ובי״א1 אין. הטווח בי״א2 (80) גדול מהטווח בי״א1 (50).</p>"
+  ];
+  Array.prototype.forEach.call(document.querySelectorAll(".q"), function (q, i) {
+    if (!ANSWERS[i]) return;
+    var d = document.createElement("details"); d.className = "ans";
+    d.innerHTML = '<summary><span class="show">הצגת תשובה (נסו קודם לבד)</span><span class="hide">הסתרת התשובה</span></summary><div class="a">' + ANSWERS[i] + "</div>";
+    q.appendChild(d);
+  });
+
+  var SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzrJave6Aq3qf_kRFaUYVBTds_nRSeUYSlrct2G2n2OlKq0ZUDIKsxF6qBKJhbdYsXG1w/exec";
+  var QUIZ_NAME = "בגרות: ממוצע חציון שכיח";
+  var SENT_KEY = "mmm-bagrut-submitted";
+  var btn = document.getElementById("submitBtn"), msg = document.getElementById("submitMsg");
+  var nameEl = document.getElementById("stName"), clsEl = document.getElementById("stClass");
+  var confirmEmpty = false, confirmAgain = false;
+  function say(text, cls) { msg.textContent = text; msg.className = "msg " + (cls || ""); }
+  try { if (localStorage.getItem(SENT_KEY)) { document.body.classList.add("submitted"); say("כבר הגשתם מהמחשב הזה ב-" + localStorage.getItem(SENT_KEY) + ". אפשר להגיש שוב, וההגשה תישמר כשורה נוספת.", "warn"); } } catch (e) {}
+  btn.addEventListener("click", function () {
+    var name = nameEl.value.trim(), cls = clsEl.value.trim();
+    nameEl.classList.toggle("err", !name); clsEl.classList.toggle("err", !cls);
+    if (!name || !cls) { say("כתבו שם מלא וכיתה בראש הדף לפני ההגשה.", "bad"); (name ? clsEl : nameEl).focus(); return; }
+    var answers = {}, empty = 0;
+    Array.prototype.forEach.call(document.querySelectorAll("textarea[data-col]"), function (t) {
+      answers[t.dataset.col] = t.value.trim(); if (!t.value.trim()) empty++;
+    });
+    if (empty && !confirmEmpty) { confirmEmpty = true; say("יש " + empty + " תיבות ריקות. כדי להגיש בכל זאת, לחצו שוב על ״הגשה״.", "warn"); return; }
+    var already = false; try { already = !!localStorage.getItem(SENT_KEY); } catch (e) {}
+    if (already && !confirmAgain) { confirmAgain = true; say("כבר הגשתם. כדי להגיש שוב, לחצו שוב על ״הגשה״.", "warn"); return; }
+    btn.disabled = true; say("שולח...", "");
+    fetch(SUBMIT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ quiz: QUIZ_NAME, name: name, cls: cls, answers: answers }) })
+      .then(function () {
+        var when = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+        try { localStorage.setItem(SENT_KEY, when); } catch (e) {}
+        document.body.classList.add("submitted");
+        say("התשובות נשלחו בהצלחה (" + when + "). עכשיו אפשר לפתוח את ״הצגת תשובה״ מתחת לכל סעיף.", "ok");
+        confirmEmpty = false; confirmAgain = false; btn.disabled = false;
+      })
+      .catch(function () { btn.disabled = false; say("השליחה נכשלה. בדקו את החיבור לאינטרנט ונסו שוב. אם זה חוזר, הדפיסו את הדף ושמרו כ-PDF.", "bad"); });
+  });
+
+  var KEY = "mmm-bagrut-answers", saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+  [["stName", "_name"], ["stClass", "_cls"]].forEach(function (p) {
+    var el = document.getElementById(p[0]); if (saved[p[1]]) el.value = saved[p[1]];
+    el.addEventListener("input", function () { saved[p[1]] = el.value; try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("textarea[data-k]"), function (t) {
+    if (saved[t.dataset.k]) t.value = saved[t.dataset.k];
+    t.addEventListener("input", function () {
+      saved[t.dataset.k] = t.value;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+    });
+  });
+})();
+</script>
+</body>
+</html>
