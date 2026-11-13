@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מדגם ושגיאת דגימה: הסבר, מעבדה, שאלות ו-Excel</title>
+<style>
+  :root {
+    --bg: #eef1f5; --paper: #ffffff; --ink: #1b2230; --muted: #5b6475;
+    --head: #12395c; --accent: #1f5f99; --soft: #e6eef7; --line: #c9d1dc;
+    --grid: #e3e7ee; --src: #fbf8ef; --srcline: #e5dcc0;
+    --tile: #1f5f99; --pick: #f5c518; --rnd: #1f5f99; --bias: #c0392b;
+    --town: #33a6c9; --mosh: #e08a2e; --far: #8e5bd0;
+    --mean: #c2410c; --meanbg: #fce9dc; --med: #1d5fa8; --medbg: #e1ecf8;
+    --mode: #11795e; --modebg: #ddf2ea; --rng: #6d3fb5; --rngbg: #eee7fa;
+    --good: #2e7d4f; --goodbg: #e3f4ea; --badbg: #fbe7e4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161d; --paper: #1b2029; --ink: #e7eaf0; --muted: #a0a8b7;
+      --head: #9cc4ea; --accent: #8db9e6; --soft: #233142; --line: #3a4250;
+      --grid: #2a313c; --src: #24221c; --srcline: #4a4433;
+      --tile: #6fa8e0; --pick: #e0b200; --rnd: #6fa8e0; --bias: #ef7b6c;
+      --town: #4cbad9; --mosh: #e9a052; --far: #a985e0;
+      --mean: #f08a52; --meanbg: #3a2418; --med: #7fb0ea; --medbg: #1c2c40;
+      --mode: #4cc39e; --modebg: #15332a; --rng: #b393ec; --rngbg: #2b2340;
+      --good: #6fd29a; --goodbg: #17301f; --badbg: #3a1d1a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161d; --paper: #1b2029; --ink: #e7eaf0; --muted: #a0a8b7;
+    --head: #9cc4ea; --accent: #8db9e6; --soft: #233142; --line: #3a4250;
+    --grid: #2a313c; --src: #24221c; --srcline: #4a4433;
+    --tile: #6fa8e0; --pick: #e0b200; --rnd: #6fa8e0; --bias: #ef7b6c;
+    --town: #4cbad9; --mosh: #e9a052; --far: #a985e0;
+    --mean: #f08a52; --meanbg: #3a2418; --med: #7fb0ea; --medbg: #1c2c40;
+    --mode: #4cc39e; --modebg: #15332a; --rng: #b393ec; --rngbg: #2b2340;
+    --good: #6fd29a; --goodbg: #17301f; --badbg: #3a1d1a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Assistant", "Segoe UI", Arial, sans-serif; font-size: 17px; line-height: 1.65; }
+  main { max-width: 900px; margin: 0 auto; padding: 28px 16px 64px; }
+  .paper { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 28px 32px; margin-bottom: 28px; }
+  h1 { font-size: 1.55rem; color: var(--head); margin: 0 0 6px; }
+  h2 { font-size: 1.3rem; color: var(--head); margin: 26px 0 8px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 1.05rem; margin: 16px 0 4px; }
+  p { margin: 0 0 10px; }
+  .fict { color: var(--muted); font-style: italic; font-size: .85rem; }
+  .parthead { background: var(--soft); border-radius: 8px; padding: 10px 16px; margin-bottom: 18px; font-size: 1.05rem; }
+  .parthead b { color: var(--head); }
+  .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  .term { font-weight: 800; color: var(--head); }
+  .key { background: var(--soft); border-inline-start: 5px solid var(--accent); border-radius: 8px; padding: 10px 16px; margin: 12px 0; }
+  .key p:last-child { margin: 0; }
+
+  .flow { display: flex; align-items: stretch; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+  .flow .box { flex: 1 1 180px; border: 2px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--paper); }
+  .flow .box b { display: block; color: var(--head); font-size: 1.05rem; }
+  .flow .box small { color: var(--muted); }
+  .flow .arr { align-self: center; font-size: 1.6rem; color: var(--muted); }
+  @media (max-width: 640px) { .flow .arr { transform: rotate(-90deg); flex-basis: 100%; text-align: center; } }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+  .cards .c { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; border-top: 6px solid var(--accent); }
+  .cards .c.b { border-top-color: var(--bias); }
+  .cards .c h3 { margin: 0 0 4px; }
+  .cards .c p { font-size: .93rem; margin: 0 0 6px; }
+  .cards .c .eg { color: var(--muted); font-size: .88rem; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+
+  .targets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 6px; }
+  .targets figure { margin: 0; text-align: center; }
+  .targets svg { width: 100%; max-width: 200px; display: block; margin: 0 auto; }
+  .targets figcaption { font-size: .9rem; }
+  .targets figcaption b { display: block; color: var(--head); }
+  @media (max-width: 560px) { .targets { grid-template-columns: 1fr; } }
+
+  .check { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+  .check p { margin: 0 0 8px; }
+  .check .opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .check .fb { margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: .93rem; display: none; }
+  .check .fb.on { display: block; }
+  .check .fb.ok { background: var(--goodbg); } .check .fb.no { background: var(--badbg); }
+
+  button { font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; border: 0; border-radius: 7px;
+    padding: 7px 14px; background: var(--accent); color: var(--paper); }
+  button.ok { background: #2e8b57; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  button.biasbtn { background: var(--bias); }
+  button:disabled { opacity: .55; cursor: default; }
+
+  .lab { border: 2px solid var(--accent); border-radius: 12px; padding: 16px 18px; }
+  .lab .ctrl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+  .lab .ctrl label { font-weight: 700; display: flex; gap: 6px; align-items: center; }
+  .lab select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+  .lab .sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 4px; }
+  .popsvg, .dotsvg, .chart { width: 100%; display: block; color: var(--ink); }
+  .popsvg { max-width: 700px; margin: 0 auto; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin: 6px 0; }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-inline-end: 4px; }
+  .tablewrap { overflow-x: auto; margin: 10px 0; }
+  table.res { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: .92rem; min-width: 100%; }
+  table.res th, table.res td { border: 1px solid var(--line); padding: 5px 10px; text-align: center; }
+  table.res th { background: var(--soft); }
+  table.res td.lbl { text-align: right; font-weight: 700; }
+  table.res tr.err td { background: var(--src); }
+  th.m1 { color: var(--mean); } th.m2 { color: var(--med); } th.m3 { color: var(--mode); } th.m4 { color: var(--rng); }
+  .hint { color: var(--muted); font-size: .88rem; }
+
+  .fig { margin: 22px 0 8px; }
+  .fig h3 { font-size: 1.25rem; color: var(--head); margin: 0 0 4px; }
+  .chart { max-width: 700px; margin: 0 auto; }
+  details.src { background: var(--src); border: 2px solid var(--srcline); border-inline-start: 6px solid #d9a521; border-radius: 8px; margin: 22px 0; }
+  details.src summary { cursor: pointer; padding: 12px 16px; font-weight: 800; font-size: 1.1rem; color: var(--head); }
+  details.src .body { padding: 0 16px 12px; }
+  details.src p { font-size: .95rem; }
+  table.data { border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 4px 10px; text-align: center; }
+  table.data th { background: var(--soft); }
+  table.meth td { text-align: right; vertical-align: top; }
+  table.meth td:last-child, table.meth td:nth-child(3) { text-align: center; white-space: nowrap; }
+
+  .q { margin: 28px 0; }
+  .q .num { font-weight: 800; color: var(--head); margin-inline-end: 6px; }
+  .q p { margin: 0 0 6px; }
+  .pts { color: var(--muted); font-size: .85rem; display: block; margin-top: 2px; }
+  .tag { display: inline-block; font-size: .78rem; font-weight: 700; padding: 1px 10px; border-radius: 999px; margin-inline-end: 6px; }
+  .tag.whatif { background: #fde8d4; color: #8a3b0b; }
+  .tag.lab { background: #dbe9f8; color: #12395c; }
+  textarea { width: 100%; min-height: 90px; font: inherit; font-size: .95rem; padding: 8px 10px; resize: vertical;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  textarea.short { min-height: 50px; }
+  textarea[readonly] { background: var(--soft); min-height: 44px; font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; text-align: right; }
+  .grid { display: grid; gap: 8px; }
+  .grid.g2 { grid-template-columns: 1fr 1fr; }
+  .grid.g4 { grid-template-columns: repeat(4, 1fr); }
+  .grid label { font-size: .9rem; font-weight: 600; }
+  .grid textarea { min-height: 80px; }
+  @media (max-width: 640px) { .paper { padding: 18px 14px; } .grid.g4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .grid.g2, .grid.g4 { grid-template-columns: 1fr; } }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; direction: ltr; justify-content: flex-end; }
+  .chips span { background: var(--pick); color: #1b2230; font-weight: 800; border-radius: 6px; min-width: 34px; text-align: center; padding: 2px 8px; }
+
+  details.ans { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+  details.ans summary { cursor: pointer; padding: 6px 12px; font-weight: 700; font-size: .92rem; color: var(--accent); list-style: none; }
+  details.ans summary::-webkit-details-marker { display: none; }
+  details.ans summary::before { content: "◀ "; font-size: .75rem; }
+  details.ans[open] summary::before { content: "▼ "; }
+  details.ans summary .hide { display: none; }
+  details.ans[open] summary .hide { display: inline; }
+  details.ans[open] summary .show { display: none; }
+  details.ans .a { padding: 0 14px 10px; font-size: .95rem; }
+  details.ans .a p { margin: 0 0 6px; } details.ans .a ul { margin: 0 0 6px; padding-inline-start: 1.2em; }
+  body:not(.submitted) details.ans { display: none; }
+
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .who { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 14px; }
+  .who label { font-weight: 700; font-size: .95rem; display: flex; flex-direction: column; gap: 4px; }
+  .who input { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  .who input.err { border-color: #c0392b; box-shadow: 0 0 0 2px #f5c6c0; }
+  @media (max-width: 520px) { .who { grid-template-columns: 1fr; } }
+  .submitbox h2 { margin-top: 0; }
+  .submitbox .note { color: var(--muted); font-size: .9rem; }
+  button.big { font-size: 1.05rem; padding: 10px 28px; }
+  .msg { font-weight: 700; min-height: 1.4em; margin: 12px 0 0; }
+  .msg.ok { color: #2e7d4f; } .msg.bad { color: #c0392b; } .msg.warn { color: #a05a00; }
+  .dl { display: inline-block; background: #217346; color: #fff; text-decoration: none; font-weight: 700; padding: 10px 22px; border-radius: 8px; margin: 6px 0 4px; }
+  .steps { margin: 8px 0 12px; padding-inline-start: 1.3em; } .steps li { margin-bottom: 4px; }
+  .sub { font-size: 1.15rem; color: var(--head); margin: 26px 0 4px; border-bottom: 2px solid var(--soft); padding-bottom: 4px; }
+  input[type=text].nbox, input[type=text].formula { font: inherit; font-size: .95rem; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); width: 100%; }
+  input.nbox { direction: ltr; text-align: center; font-variant-numeric: tabular-nums; background: #fff2cc; }
+  input.formula { direction: ltr; text-align: left; font-family: Consolas, "Courier New", monospace; background: #fff2cc; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) input.nbox, :root:not([data-theme="light"]) input.formula { background: #3a3420; } }
+  :root[data-theme="dark"] input.nbox, :root[data-theme="dark"] input.formula { background: #3a3420; }
+  .f { display: grid; gap: 10px; } .f.c4 { grid-template-columns: repeat(4, 1fr); }
+  .f label { font-weight: 700; font-size: .88rem; display: flex; flex-direction: column; gap: 4px; }
+  table.g { border-collapse: collapse; width: 100%; min-width: 620px; }
+  table.g th, table.g td { border: 1px solid var(--line); padding: 5px 6px; text-align: center; }
+  table.g th { background: var(--soft); font-size: .85rem; }
+  table.g td.lbl { text-align: right; font-weight: 700; font-size: .9rem; white-space: nowrap; }
+  table.g input { padding: 5px 4px; }
+  .mark { display: block; font-size: .78rem; font-weight: 700; min-height: 1em; margin-top: 2px; }
+  .mark.ok { color: var(--good); } .mark.no { color: #c0392b; }
+  input.okc { border-color: var(--good) !important; box-shadow: 0 0 0 2px var(--goodbg); }
+  input.noc { border-color: #c0392b !important; box-shadow: 0 0 0 2px var(--badbg); }
+  body:not(.submitted) .mark { display: none; }
+  code { direction: ltr; unicode-bidi: isolate; font-family: Consolas, "Courier New", monospace; background: var(--soft); padding: 1px 6px; border-radius: 4px; }
+  .score { font-size: 1.05rem; font-weight: 800; color: var(--head); margin-top: 8px; }
+  @media (max-width: 640px) { .f.c4 { grid-template-columns: 1fr 1fr; } }
+  @media print {
+    body { background: #fff; } main { padding: 0; } .paper { border: 0; }
+    .tools, button, .lab .ctrl { display: none; } details.ans { display: none; } textarea { border-color: #999; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<div class="paper">
+  <h1>מדגם, הטיה ושגיאת דגימה, יחד עם ממוצע, חציון, שכיח וטווח</h1>
+  <p>הדף בנוי מארבעה חלקים: <b>חלק א'</b> הוא הסבר קצר עם שאלות בדיקה, <b>חלק ב'</b> הוא מעבדת דגימה שבה מגרילים מדגמים, <b>חלק ג'</b> הוא שאלות, ו<b>חלק ד'</b> הוא משימת Excel. בסוף הדף לוחצים פעם אחת על ״הגשה״, וכל התשובות נשלחות יחד.</p>
+  <p>התשובות נשמרות בדפדפן תוך כדי כתיבה, כך שאפשר לסגור את הדף ולחזור אליו מאותו מחשב.</p>
+  <p class="fict">כל הנתונים, המקומות והדמויות בדויים ונבנו לצורכי לימוד.</p>
+  <div class="who">
+    <label>שם מלא<input type="text" id="stName" autocomplete="name" placeholder="שם פרטי ושם משפחה"></label>
+    <label>כיתה<input type="text" id="stClass" placeholder="למשל י״א2"></label>
+  </div>
+</div>
+
+<!-- ===================== חלק א: הסבר ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק א': מה זה מדגם, ולמה הוא יכול לטעות?</b></div>
+
+  <h2>אוכלוסייה ומדגם</h2>
+  <p>רוצים לדעת כמה שעות ביום תלמידי שכבת י״א מול מסך. בשכבה 300 תלמידים, ולשאול את כולם זה הרבה עבודה. לכן שואלים רק חלק מהם, ומהתשובות שלהם מסיקים על כל השכבה.</p>
+  <div class="flow">
+    <div class="box"><b>אוכלוסייה</b>כל מי שרוצים לדעת עליו משהו.<br><small>300 תלמידי השכבה</small></div>
+    <div class="arr">←</div>
+    <div class="box"><b>מדגם</b>החלק מהאוכלוסייה שבאמת שואלים או מודדים.<br><small>למשל 10 תלמידים</small></div>
+    <div class="arr">←</div>
+    <div class="box"><b>מסקנה</b>מחשבים מדדים במדגם, ומשתמשים בהם כהערכה לאוכלוסייה.<br><small>״הממוצע בשכבה הוא בערך...״</small></div>
+  </div>
+  <p>השאלה החשובה: <b>האם המדגם דומה לאוכלוסייה?</b> אם כן, המדדים במדגם (ממוצע, חציון, שכיח וטווח) יהיו קרובים למדדים באוכלוסייה.</p>
+
+  <h2>מדגם מייצג, מדגם אקראי ומדגם נטול הטיות</h2>
+  <div class="key">
+    <p><span class="term">מדגם מייצג</span> הוא מדגם שדומה לאוכלוסייה בתכונות שחשובות לשאלה. למשל, אם בשכבה שליש מהתלמידים גרים במושבים, גם במדגם מייצג יהיו בערך שליש תלמידים מהמושבים.</p>
+    <p><span class="term">מדגם אקראי</span> הוא מדגם שבו לכל אחד באוכלוסייה יש <b>אותו סיכוי</b> להיבחר. למשל, מגרילים שמות מתוך רשימת כל התלמידים. זו הדרך הטובה ביותר לקבל מדגם מייצג.</p>
+    <p><span class="term">מדגם נטול הטיות</span> הוא מדגם שאין בו סיבה קבועה שתמשוך את התוצאה לכיוון מסוים. במדגם אקראי אין הטיה. ב<b>מדגם מוטה</b> יש קבוצה שיש לה סיכוי גבוה יותר (או נמוך יותר) להיכלל בו, ולכן התוצאה נוטה כל הפעם לאותו כיוון.</p>
+  </div>
+
+  <h3>שלוש הטיות נפוצות</h3>
+  <div class="cards">
+    <div class="c b"><h3>הטיית בחירה (מדגם נוחות)</h3><p>בוחרים את מי שקל להגיע אליו: חברים, הכיתה שלי, מי שעומד בתחנה.</p><p class="eg">שואלים על שעות מסך רק את חברי מועדון הגיימינג. התוצאה תצא גבוהה מדי.</p></div>
+    <div class="c b"><h3>הטיית התנדבות</h3><p>עונה רק מי שבחר לענות. בדרך כלל אלה אנשים שהנושא חשוב להם או מפריע להם במיוחד.</p><p class="eg">סקר בסטורי באינסטגרם: עונה מי שרואה את הסטורי, כלומר מי שהרבה בטלפון.</p></div>
+    <div class="c b"><h3>הטיה בניסוח השאלה</h3><p>השאלה מכוונת לתשובה מסוימת, וכך משנה את מה שעונים.</p><p class="eg">״אתה מסכים שהטלפון גוזל לך יותר מדי זמן?״ במקום ״כמה שעות ביום אתה מול מסך?״</p></div>
+  </div>
+
+  <h2>שגיאת דגימה</h2>
+  <p>גם מדגם אקראי לגמרי לא ייתן בדיוק את התוצאה של האוכלוסייה. בכל הגרלה נבחרים תלמידים אחרים, ולכן גם הממוצע יוצא קצת אחר. ההפרש הזה נקרא <span class="term">שגיאת דגימה</span>:</p>
+  <div class="key"><p style="text-align:center;font-weight:700">שגיאת הדגימה = הערך במדגם − הערך באוכלוסייה</p>
+    <p>למשל, אם הממוצע בשכבה הוא 4.5 שעות, וממוצע המדגם יצא 5.1 שעות, אז שגיאת הדגימה בממוצע היא <span class="ltr">5.1 − 4.5 = 0.6</span> שעות.</p></div>
+  <p>שגיאת דגימה היא לא ״טעות״ של מי שערך את הסקר. היא נובעת מהמזל של ההגרלה. <b>ככל שהמדגם גדול יותר, שגיאת הדגימה בדרך כלל קטנה יותר.</b></p>
+  <p>להטיה, לעומת זאת, יש סיבה קבועה, ולכן היא <b>לא נעלמת כשמגדילים את המדגם</b>. סקר מוטה עם 1,000 משתתפים עדיין ייתן תוצאה לא נכונה.</p>
+
+  <div class="targets" id="targets"></div>
+  <p class="hint" style="text-align:center">כל נקודה היא ממוצע של מדגם אחר. מרכז המטרה הוא הממוצע האמיתי של האוכלוסייה.</p>
+
+  <h2>בדקו את עצמכם</h2>
+  <p>לכל מקרה, בחרו אם המדגם אקראי או מוטה. השאלות האלה לא נשלחות למורה.</p>
+  <div id="checks"></div>
+</div>
+
+<!-- ===================== חלק ב: מעבדה ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ב': מעבדת הדגימה</b></div>
+  <p>כאן מופיעה כל האוכלוסייה: 300 תלמידי שכבת י״א. כל ריבוע הוא תלמיד, והמספר בתוכו הוא כמה שעות ביום הוא מול מסך (מעוגל לשעה שלמה). ריבוע כהה יותר פירושו יותר שעות.</p>
+  <p>במציאות אנחנו לא רואים את כל האוכלוסייה. כאן אנחנו כן רואים אותה, ולכן אפשר לבדוק עד כמה המדגם צדק.</p>
+  <div class="lab">
+    <div class="ctrl">
+      <label>גודל המדגם
+        <select id="nSel"><option>5</option><option selected>10</option><option>30</option><option>60</option></select>
+      </label>
+      <button type="button" id="b1r">מדגם אקראי אחד</button>
+      <button type="button" id="b1b" class="biasbtn">מדגם מוטה אחד</button>
+      <span class="sep"></span>
+      <button type="button" id="b100r">100 מדגמים אקראיים</button>
+      <button type="button" id="b100b" class="biasbtn">100 מדגמים מוטים</button>
+      <button type="button" id="bClear" class="ghost">ניקוי</button>
+    </div>
+    <p class="hint"><b>מדגם אקראי:</b> הגרלה מתוך כל 300 התלמידים, לכל אחד אותו סיכוי. <b>מדגם מוטה (סקר בסטורי):</b> עונים רק מי שראו את הסטורי, ולכן תלמיד שנמצא יותר שעות בטלפון מופיע במדגם בסיכוי גבוה יותר.</p>
+    <svg class="popsvg" id="popsvg" role="img" aria-label="300 ריבועים, כל אחד תלמיד, עם מספר שעות המסך שלו"></svg>
+    <div class="legend"><span><i style="background:var(--pick)"></i>נבחר במדגם האחרון</span><span>המספר בריבוע = שעות מסך ביום</span></div>
+
+    <h3>המדדים: האוכלוסייה מול המדגם האחרון</h3>
+    <div class="tablewrap"><table class="res" id="resTable"></table></div>
+    <p class="hint">השורה התחתונה היא שגיאת הדגימה בכל מדד: הערך במדגם פחות הערך באוכלוסייה.</p>
+
+    <h3>הממוצעים של כל המדגמים שהגרלתם</h3>
+    <p class="hint">כל נקודה היא הממוצע של מדגם אחד. הקו המקווקו הוא הממוצע האמיתי של האוכלוסייה. כל שורה היא סוג מדגם וגודל מדגם אחר.</p>
+    <svg class="dotsvg" id="dotsvg" role="img" aria-label="תרשים נקודות של ממוצעי המדגמים"></svg>
+    <div class="tablewrap"><table class="res" id="laneTable"></table></div>
+  </div>
+</div>
+
+<!-- ===================== חלק ג: שאלה 1 ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ג', שאלה 1: שעות מסך בשכבה</b> (40 נקודות) · עובדים עם המעבדה שבחלק ב'</div>
+
+  <div class="q" data-a="q1_1">
+    <p><span class="num">1.</span><span class="tag lab">מדגם משלכם</span>לחצו על הכפתור כדי להגריל מדגם אקראי של 10 תלמידים. המדגם יופיע כאן, וישלח למורה יחד עם התשובות.</p>
+    <p><button type="button" id="mySampleBtn">הגרלת המדגם שלי (10 תלמידים)</button></p>
+    <div class="chips" id="myChips"></div>
+    <textarea readonly data-k="q1_1s" data-col="ש1.1 המדגם שהוגרל" id="mySample" placeholder="עוד לא הוגרל מדגם"></textarea>
+    <p style="margin-top:10px">חשבו בעצמכם את הממוצע, החציון, השכיח והטווח של המדגם שלכם, וכתבו את דרך החישוב. אם יש יותר משכיח אחד, כתבו את כולם.
+      <span class="pts">(12 נקודות)</span></p>
+    <textarea data-k="q1_1" data-col="ש1.1 ממוצע חציון שכיח טווח"></textarea>
+  </div>
+
+  <div class="q" data-a="q1_2">
+    <p><span class="num">2.</span>המדדים של כל האוכלוסייה מופיעים בטבלה שבמעבדה. מהי שגיאת הדגימה בממוצע של המדגם שלכם? המדגם שלכם אקראי, אז למה בכל זאת יש הפרש?
+      <span class="pts">(6 נקודות)</span></p>
+    <textarea data-k="q1_2" data-col="ש1.2 שגיאת דגימה"></textarea>
+  </div>
+
+  <div class="q" data-a="q1_3">
+    <p><span class="num">3.</span><span class="tag lab">ניסוי</span>במעבדה, בחרו גודל מדגם 5 ולחצו ״100 מדגמים אקראיים״. אחר כך בחרו גודל 60 ולחצו שוב.</p>
+    <p>לפי הטבלה שמתחת לתרשים, כתבו לכל גודל מדגם מה הממוצע הקטן ביותר, הגדול ביותר, ומה טווח הממוצעים. מה אפשר להסיק על הקשר בין גודל המדגם לשגיאת הדגימה?
+      <span class="pts">(8 נקודות)</span></p>
+    <textarea data-k="q1_3" data-col="ש1.3 גודל המדגם ושגיאת דגימה"></textarea>
+  </div>
+
+  <div class="q" data-a="q1_4">
+    <p><span class="num">4.</span><span class="tag lab">ניסוי</span>עכשיו, בגודל 60, לחצו ״100 מדגמים מוטים״ (סקר בסטורי).</p>
+    <p>איפה נמצאים הממוצעים של המדגמים המוטים ביחס לממוצע האמיתי (הקו המקווקו)? האם הגדלת המדגם המוטה הייתה פותרת את הבעיה? הסבירו מה ההבדל בין שגיאת דגימה להטיה.
+      <span class="pts">(8 נקודות)</span></p>
+    <textarea data-k="q1_4" data-col="ש1.4 מדגם מוטה"></textarea>
+  </div>
+
+  <div class="q" data-a="q1_5">
+    <p><span class="num">5.</span>הטווח של האוכלוסייה הוא 9 שעות. הגרילו כמה מדגמים אקראיים בגודל 5 והסתכלו על הטווח שלהם בטבלת המדדים.</p>
+    <p>האם הטווח של מדגם יכול להיות <b>גדול</b> מהטווח של האוכלוסייה? ולמה הטווח במדגם קטן הוא בדרך כלל קטן מ-9? נמקו.
+      <span class="pts">(6 נקודות)</span></p>
+    <textarea data-k="q1_5" data-col="ש1.5 טווח במדגם"></textarea>
+  </div>
+</div>
+
+<!-- ===================== חלק ג: שאלה 2 ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ג', שאלה 2: כמה זמן לוקח להגיע לבית הספר?</b> (60 נקודות)</div>
+  <p>מועצת התלמידים רוצה לבקש מההנהלה לדחות את תחילת הלימודים. לשם כך היא צריכה לדעת כמה זמן (בדקות) לוקח לתלמידים להגיע לבית הספר.</p>
+  <p>בבית הספר לומדים 600 תלמידים: <b>400</b> גרים בעיר, <b>180</b> גרים במושבים שמסביב ומגיעים באוטובוס, ו-<b>20</b> מגיעים מערים אחרות.</p>
+
+  <details class="src" open>
+    <summary>מקור 1: ארבעה חברי מועצה, ארבע דרכים לבחור מדגם (לחצו כדי לסגור או לפתוח)</summary>
+    <div class="body">
+      <div class="tablewrap"><table class="data meth">
+        <tr><th>חבר/ת מועצה</th><th>איך נבחר המדגם</th><th>כמה ענו</th><th>ממוצע שהתקבל</th></tr>
+        <tr><td><b>דנה</b></td><td>שאלה 20 חברים שלה מהשכונה שלה, שנמצאת ממש ליד בית הספר.</td><td>20</td><td>7 דקות</td></tr>
+        <tr><td><b>נועם</b></td><td>עמד בתחנה שבה עוצרים האוטובוסים מהמושבים, ושאל 20 תלמידים שירדו מהם.</td><td>20</td><td>38 דקות</td></tr>
+        <tr><td><b>יואב</b></td><td>פרסם סקר בקבוצת הווטסאפ של בית הספר: ״מי שרוצה, שיענה״.</td><td>80</td><td>31 דקות</td></tr>
+        <tr><td><b>מאיה</b></td><td>הגרילה 20 שמות מתוך רשימת כל 600 התלמידים של בית הספר (ב-Excel, בעזרת הפונקציה RAND).</td><td>20</td><td>ראו איור ד'</td></tr>
+      </table></div>
+    </div>
+  </details>
+
+  <div class="fig">
+    <h3>איור ד': זמן ההגעה של 20 התלמידים במדגם של מאיה</h3>
+    <svg class="chart" id="q2fig" role="img" aria-label="גרף עמודות: זמן ההגעה בדקות של 20 תלמידים, צבוע לפי מקום המגורים"></svg>
+    <div class="legend" style="justify-content:center"><span><i style="background:var(--town)"></i>גר בעיר</span><span><i style="background:var(--mosh)"></i>גר במושב</span><span><i style="background:var(--far)"></i>מעיר אחרת</span></div>
+  </div>
+  <details class="src">
+    <summary>הנתונים מאיור ד' בטבלה (לחצו כדי לפתוח, אפשר להעתיק ל-Excel)</summary>
+    <div class="body">
+      <div class="tablewrap"><table class="data" id="q2table"></table></div>
+      <p style="margin-top:8px"><button type="button" id="copyQ2">העתקת הטבלה ל-Excel</button></p>
+    </div>
+  </details>
+
+  <div class="q" data-a="q2_1">
+    <p><span class="num">1.</span>לגבי כל אחד מחברי המועצה במקור 1: האם המדגם שלו אקראי? אם המדגם מוטה, ציינו את סוג ההטיה, והסבירו אם הממוצע שלו יצא גבוה מדי או נמוך מדי.
+      <span class="pts">(12 נקודות)</span></p>
+    <div class="grid g2">
+      <label>דנה<textarea data-k="q2_1a" data-col="ש2.1 דנה"></textarea></label>
+      <label>נועם<textarea data-k="q2_1b" data-col="ש2.1 נועם"></textarea></label>
+      <label>יואב<textarea data-k="q2_1c" data-col="ש2.1 יואב"></textarea></label>
+      <label>מאיה<textarea data-k="q2_1d" data-col="ש2.1 מאיה"></textarea></label>
+    </div>
+  </div>
+
+  <div class="q" data-a="q2_2">
+    <p><span class="num">2.</span>חשבו את הממוצע, החציון, השכיח והטווח של זמן ההגעה במדגם של מאיה (איור ד'). כתבו את דרך החישוב.
+      <span class="pts">(12 נקודות)</span></p>
+    <textarea data-k="q2_2" data-col="ש2.2 ממוצע חציון שכיח טווח"></textarea>
+  </div>
+
+  <div class="q" data-a="q2_3">
+    <p><span class="num">3.</span>האם המדגם של מאיה מייצג את בית הספר מבחינת מקום המגורים? השוו את האחוזים במדגם לאחוזים בבית הספר. אם יש הבדל, מה הסיבה שלו, למרות שהמדגם אקראי?
+      <span class="pts">(8 נקודות)</span></p>
+    <textarea data-k="q2_3" data-col="ש2.3 מייצג לפי מגורים"></textarea>
+  </div>
+
+  <div class="q" data-a="q2_4">
+    <p><span class="num">4.</span>המועצה רוצה לכתוב להנהלה: ״לתלמיד טיפוסי לוקח ___ דקות להגיע לבית הספר״. באיזה מדד מהמדגם של מאיה כדאי להשתמש? נמקו בעזרת הנתונים.
+      <span class="pts">(8 נקודות)</span></p>
+    <textarea data-k="q2_4" data-col="ש2.4 איזה מדד לדיווח"></textarea>
+  </div>
+
+  <div class="q" data-a="q2_5">
+    <p><span class="num">5.</span><span class="tag whatif">מה יקרה אם</span>חברת האוטובוסים קיצרה את המסלול, ועכשיו הנסיעה של כל תלמיד <b>שגר במושב</b> קצרה ב-10 דקות. זמן ההגעה של שאר התלמידים לא השתנה.</p>
+    <p>מה יקרה לממוצע, לחציון, לשכיח ולטווח של המדגם של מאיה? לגבי כל מדד כתבו אם הוא יגדל, יקטן או לא ישתנה, ונמקו.
+      <span class="pts">(8 נקודות)</span></p>
+    <div class="grid g4">
+      <label>ממוצע<textarea data-k="q2_5a" data-col="ש2.5 ממוצע"></textarea></label>
+      <label>חציון<textarea data-k="q2_5b" data-col="ש2.5 חציון"></textarea></label>
+      <label>שכיח<textarea data-k="q2_5c" data-col="ש2.5 שכיח"></textarea></label>
+      <label>טווח<textarea data-k="q2_5d" data-col="ש2.5 טווח"></textarea></label>
+    </div>
+  </div>
+
+  <div class="q" data-a="q2_6">
+    <p><span class="num">6.</span>מזכירות בית הספר בדקה את כל 600 התלמידים, ומצאה שזמן ההגעה הממוצע הוא <b>19 דקות</b> (לפני שינוי המסלול).</p>
+    <p>א. מהי שגיאת הדגימה בממוצע של מאיה?<br>
+       ב. ביואב ענו 80 תלמידים, פי 4 יותר מאשר אצל מאיה, אבל הממוצע שלו רחוק יותר מ-19. איך זה ייתכן?<br>
+       ג. מה מאיה יכולה לעשות כדי ששגיאת הדגימה שלה תהיה כנראה קטנה יותר? האם זה מבטיח שהממוצע יצא בדיוק 19?
+      <span class="pts">(12 נקודות)</span></p>
+    <textarea data-k="q2_6" data-col="ש2.6 שגיאת דגימה והטיה"></textarea>
+  </div>
+</div>
+
+<!-- ===================== חלק ד: Excel ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ד': משימת Excel, סקר שעות שינה</b> (100 נקודות)</div>
+  <p>מועצת התלמידים רוצה לדעת כמה שעות ישנים תלמידי בית הספר בלילה שלפני יום לימודים. בקובץ יש את כל 600 התלמידים, וארבעה מדגמים שנבחרו בדרכים שונות. פותרים את הקובץ לפי ההוראות שבגיליון ״הוראות״, ומעתיקים לכאן את התשובות הסופיות.</p>
+  <a class="dl" href="sampling_excel.xlsx" download>הורדת קובץ ה-Excel</a>
+  <ol class="steps muted hint">
+    <li>מספרים עשרוניים: מעגלים ל-2 ספרות אחרי הנקודה (למשל 7.25). אפשר לכתוב גם עם פסיק.</li>
+    <li>שגיאת דגימה יכולה להיות שלילית. כתבו את הסימן (למשל -0.4).</li>
+  </ol>
+
+  <h3 class="sub">ד1. בדיקת הנתונים <span class="pts" style="display:inline">(16 נקודות)</span></h3>
+  <div class="q">
+    <p><span class="num">1.</span>לפני התיקון (שלב 1 בהוראות):</p>
+    <div class="f c4">
+      <label>קוד התלמיד עם הערך השגוי<input type="text" class="nbox" data-col="אקסל א1 קוד הערך השגוי" data-key="typo"></label>
+      <label>הטווח לפני התיקון<input type="text" class="nbox" data-col="אקסל א1 טווח לפני" data-key="b_range"></label>
+      <label>הממוצע לפני התיקון<input type="text" class="nbox" data-col="אקסל א1 ממוצע לפני" data-key="b_mean"></label>
+      <label>החציון לפני התיקון<input type="text" class="nbox" data-col="אקסל א1 חציון לפני" data-key="b_median"></label>
+    </div>
+  </div>
+  <div class="q">
+    <p><span class="num">2.</span>אחרי התיקון, המדדים של כל האוכלוסייה (600 תלמידים):</p>
+    <div class="f c4">
+      <label>ממוצע<input type="text" class="nbox" data-col="אקסל א2 ממוצע אוכלוסייה" data-key="pop.mean"></label>
+      <label>חציון<input type="text" class="nbox" data-col="אקסל א2 חציון אוכלוסייה" data-key="pop.median"></label>
+      <label>שכיח<input type="text" class="nbox" data-col="אקסל א2 שכיח אוכלוסייה" data-key="pop.mode"></label>
+      <label>טווח<input type="text" class="nbox" data-col="אקסל א2 טווח אוכלוסייה" data-key="pop.range"></label>
+    </div>
+  </div>
+  <div class="q" data-a="x_a3">
+    <p><span class="num">3.</span>ערך שגוי אחד שינה הרבה את הטווח, קצת את הממוצע, ולא שינה את החציון. הסבירו למה כל מדד הגיב כך, ואיך הטווח עזר לכם למצוא את הטעות.</p>
+    <textarea data-k="x_a3" data-col="אקסל א3 הסבר הטעות"></textarea>
+  </div>
+
+  <h3 class="sub">ד2. פונקציות טקסט וטבלת ציר <span class="pts" style="display:inline">(14 נקודות)</span></h3>
+  <div class="q" data-a="x_b1">
+    <p><span class="num">1.</span>העתיקו את הנוסחה שכתבתם בתא <span class="ltr">E2</span> בגיליון ״אוכלוסייה״ (חילוץ השכבה מהכיתה).</p>
+    <input type="text" class="formula" data-col="אקסל ב1 נוסחת שכבה" placeholder="=...">
+  </div>
+  <div class="q">
+    <p><span class="num">2.</span>לפי טבלת הציר: ממוצע שעות השינה בכל שכבה.</p>
+    <div class="f c4">
+      <label>ט׳<input type="text" class="nbox" data-col="אקסל ב2 ממוצע ט" data-key="grade.ט"></label>
+      <label>י׳<input type="text" class="nbox" data-col="אקסל ב2 ממוצע י" data-key="grade.י"></label>
+      <label>י״א<input type="text" class="nbox" data-col="אקסל ב2 ממוצע יא" data-key="grade.יא"></label>
+      <label>י״ב<input type="text" class="nbox" data-col="אקסל ב2 ממוצע יב" data-key="grade.יב"></label>
+    </div>
+  </div>
+  <div class="q" data-a="x_b3">
+    <p><span class="num">3.</span>מה טבלת הציר מלמדת על הקשר בין השכבה לשעות השינה? למה זה חשוב כשבוחרים מדגם?</p>
+    <textarea data-k="x_b3" data-col="אקסל ב3 מסקנה מהפיבוט"></textarea>
+  </div>
+
+  <h3 class="sub">ד3. ארבעת המדגמים <span class="pts" style="display:inline">(30 נקודות)</span></h3>
+  <div class="q">
+    <p><span class="num">1.</span>העתיקו מגיליון ״סיכום״ את התוצאות של כל מדגם.</p>
+    <div class="tablewrap"><table class="g" id="xgrid"></table></div>
+  </div>
+  <div class="q" data-a="x_c3">
+    <p><span class="num">2.</span>העתיקו את הנוסחה שכתבתם בתא <span class="ltr">C4</span> בגיליון ״אינסטגרם״ (חילוץ הקוד מתוך הטקסט).</p>
+    <input type="text" class="formula" data-col="אקסל ג3 נוסחת חילוץ קוד" placeholder="=...">
+  </div>
+  <div class="q" data-a="x_c2">
+    <p><span class="num">3.</span>העתיקו את נוסחת ה-VLOOKUP שכתבתם בתא <span class="ltr">E4</span> בגיליון ״אינסטגרם״ (שעות השינה).</p>
+    <input type="text" class="formula" data-col="אקסל ג2 נוסחת VLOOKUP" placeholder="=VLOOKUP(...)">
+  </div>
+
+  <h3 class="sub">ד4. שאלות הבנה <span class="pts" style="display:inline">(40 נקודות)</span></h3>
+  <div class="q" data-a="x_d1">
+    <p><span class="num">1.</span>עידו ושחר: האם כל אחד מהמדגמים אקראי? אם המדגם מוטה, ציינו את סוג ההטיה והסבירו למה הממוצע יצא נמוך מדי. היעזרו בטבלת הציר ובעמודה ״שעת מילוי״. <span class="pts">(10 נקודות)</span></p>
+    <textarea data-k="x_d1" data-col="אקסל ד1 עידו ושחר"></textarea>
+  </div>
+  <div class="q" data-a="x_d2">
+    <p><span class="num">2.</span>אלה (40 תלמידים) והמזכירות (120 תלמידים) בחרו שתיהן באקראי. איזו שגיאת דגימה קטנה יותר, ולמה? האם זה תמיד יקרה? <span class="pts">(10 נקודות)</span></p>
+    <textarea data-k="x_d2" data-col="אקסל ד2 אקראי 40 מול 120"></textarea>
+  </div>
+  <div class="q" data-a="x_d3">
+    <p><span class="num">3.</span>במדגם של המזכירות ובסקר של שחר יש בדיוק 120 תלמידים. למה שגיאת הדגימה כל כך שונה? מה זה מלמד על ההבדל בין שגיאת דגימה להטיה? <span class="pts">(10 נקודות)</span></p>
+    <textarea data-k="x_d3" data-col="אקסל ד3 120 אקראי מול 120 מוטה"></textarea>
+  </div>
+  <div class="q" data-a="x_d4">
+    <p><span class="num">4.</span>באוכלוסייה 25% מהתלמידים לומדים בי״ב. השוו לאחוז תלמידי י״ב בכל מדגם. איזה מדגם הכי פחות מייצג מבחינה זו, ואיך זה קשור לממוצע שלו? <span class="pts">(10 נקודות)</span></p>
+    <textarea data-k="x_d4" data-col="אקסל ד4 ייצוג לפי שכבה"></textarea>
+  </div>
+</div>
+
+<div class="paper submitbox">
+  <h2>הגשה</h2>
+  <p>בדקו שמילאתם שם, כיתה ותשובות בחלקים ג' ו-ד', ושהגרלתם מדגם בשאלה 1.1. אחר כך לחצו על ״הגשה״, וכל התשובות יישלחו למורה.</p>
+  <p class="note">אחרי ההגשה יופיעו מתחת לכל סעיף כפתורים ״הצגת תשובה״, וליד כל תשובה מספרית בחלק ד' יופיע ✔ או ✘.</p>
+  <div class="tools">
+    <button type="button" id="submitBtn" class="big">הגשה</button>
+    <button type="button" class="ghost" onclick="window.print()">הדפסה / שמירה כ-PDF</button>
+  </div>
+  <p id="submitMsg" class="msg" role="status" aria-live="polite"></p>
+  <p id="score" class="score"></p>
+</div>
+</main>
+
+<script>
+(function () {
+  // אם לא רוצים שהתלמידים יראו תשובות אחרי ההגשה, משנים ל-false
+  var SHOW_ANSWERS_AFTER_SUBMIT = true;
+  var NS = "http://www.w3.org/2000/svg";
+  var FONT = "Assistant, Segoe UI, Arial, sans-serif";
+  function el(parent, tag, attrs, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    parent.appendChild(e); return e;
+  }
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function r2(x) { return Math.round(x * 100) / 100; }
+  function fmt(x) { return String(r2(x)); }
+  function sgn(x) { x = r2(x); return x > 0 ? "+" + x : String(x); }
+  function ltr(s) { return '<span class="ltr">' + s + "</span>"; }
+  function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // ---------- מדדים ----------
+  function sorted(a) { return a.slice().sort(function (x, y) { return x - y; }); }
+  function mean(a) { return a.reduce(function (s, v) { return s + v; }, 0) / a.length; }
+  function median(a) { var s = sorted(a), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; }
+  function modes(a) { var c = {}, m = 0; a.forEach(function (v) { c[v] = (c[v] || 0) + 1; if (c[v] > m) m = c[v]; });
+    return { vals: Object.keys(c).filter(function (k) { return c[k] === m; }).map(Number).sort(function (x, y) { return x - y; }), count: m }; }
+  function range(a) { return Math.max.apply(null, a) - Math.min.apply(null, a); }
+
+  // ---------- מטרות ----------
+  (function () {
+    var box = document.getElementById("targets"), rnd = mulberry(11);
+    function gauss() { return (rnd() + rnd() + rnd() + rnd() - 2) / 0.58; }
+    [["מדגמים אקראיים וקטנים", "הנקודות מפוזרות סביב המרכז: שגיאת דגימה גדולה, בלי הטיה.", 0, 0, 22],
+     ["מדגמים אקראיים וגדולים", "הנקודות קרובות למרכז: שגיאת דגימה קטנה, בלי הטיה.", 0, 0, 8],
+     ["מדגמים מוטים וגדולים", "הנקודות צפופות, אבל במקום הלא נכון: הטיה.", 34, -26, 8]].forEach(function (t) {
+      var fig = document.createElement("figure"), svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", "0 0 200 200"); svg.setAttribute("aria-hidden", "true");
+      [90, 66, 42, 18].forEach(function (r, i) { el(svg, "circle", { cx: 100, cy: 100, r: r, fill: i % 2 ? "var(--paper)" : "var(--soft)", stroke: "var(--line)", "stroke-width": 1.5 }); });
+      el(svg, "circle", { cx: 100, cy: 100, r: 4, fill: "var(--ink)" });
+      for (var i = 0; i < 18; i++) el(svg, "circle", { cx: 100 + t[2] + gauss() * t[4], cy: 100 + t[3] + gauss() * t[4], r: 4.5,
+        fill: t[2] ? "var(--bias)" : "var(--rnd)", "fill-opacity": .85 });
+      fig.appendChild(svg);
+      var cap = document.createElement("figcaption"); cap.innerHTML = "<b>" + t[0] + "</b>" + t[1]; fig.appendChild(cap);
+      box.appendChild(fig);
+    });
+  })();
+
+  // ---------- בדקו את עצמכם ----------
+  (function () {
+    var items = [
+      ["כדי לדעת כמה שעות מסך יש לתלמידי השכבה, שואלים את כל חברי מועדון הגיימינג של בית הספר.", "b",
+       "מוטה: <b>הטיית בחירה</b>. חברי מועדון גיימינג נמצאים כנראה יותר שעות מול מסך, ולכן הממוצע ייצא גבוה מדי."],
+      ["מכניסים לכובע פתקים עם השמות של כל 300 תלמידי השכבה, ומוציאים 40 פתקים.", "r",
+       "אקראי: לכל תלמיד יש אותו סיכוי לצאת. המדגם צפוי להיות מייצג, אבל עדיין תהיה בו שגיאת דגימה קטנה."],
+      ["מפרסמים בסטורי של בית הספר: ״כמה שעות ביום אתם בטלפון? מי שרוצה, שיענה״. ענו 150 תלמידים.", "b",
+       "מוטה: <b>הטיית התנדבות</b>. רואים את הסטורי ועונים בעיקר מי שהרבה בטלפון. גם 150 תשובות לא מתקנות את זה."],
+      ["מגרילים 40 תלמידים מרשימת השכבה, ושואלים אותם: ״נכון שאתם מבזבזים יותר מדי זמן על הטלפון?״", "b",
+       "מוטה: <b>הטיה בניסוח</b>. הבחירה אקראית, אבל השאלה מכוונת לתשובה ״כן״. מדגם נטול הטיות צריך גם שאלה ניטרלית."]
+    ];
+    var box = document.getElementById("checks");
+    items.forEach(function (it, i) {
+      var d = document.createElement("div"); d.className = "check";
+      d.innerHTML = "<p><b>" + (i + 1) + ".</b> " + it[0] + '</p><div class="opts"><button type="button" class="ghost" data-v="r">מדגם אקראי</button><button type="button" class="ghost" data-v="b">מדגם מוטה</button></div><div class="fb"></div>';
+      var fb = d.querySelector(".fb");
+      Array.prototype.forEach.call(d.querySelectorAll("button"), function (b) {
+        b.addEventListener("click", function () {
+          var ok = b.dataset.v === it[1];
+          fb.className = "fb on " + (ok ? "ok" : "no");
+          fb.innerHTML = (ok ? "✔ נכון. " : "✘ לא בדיוק. ") + it[2];
+        });
+      });
+      box.appendChild(d);
+    });
+  })();
+
+  // ---------- אוכלוסייה ----------
+  var COUNTS = [13, 33, 57, 66, 48, 33, 21, 15, 9, 5]; // שעות 1 עד 10
+  var POP = [];
+  COUNTS.forEach(function (c, i) { for (var k = 0; k < c; k++) POP.push(i + 1); });
+  (function () { var rnd = mulberry(7); for (var i = POP.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = POP[i]; POP[i] = POP[j]; POP[j] = t; } })();
+  var PM = { mean: mean(POP), median: median(POP), modes: modes(POP).vals, range: range(POP) };
+
+  function sampleIdx(n, biased) {
+    var pool = POP.map(function (_, i) { return i; }), out = [];
+    for (var k = 0; k < n; k++) {
+      var j;
+      if (!biased) j = Math.floor(Math.random() * pool.length);
+      else {
+        var tot = 0; pool.forEach(function (p) { tot += POP[p]; });
+        var r = Math.random() * tot; j = 0;
+        while (j < pool.length - 1 && (r -= POP[pool[j]]) > 0) j++;
+      }
+      out.push(pool[j]); pool.splice(j, 1);
+    }
+    return out;
+  }
+
+  // ---------- רשת האוכלוסייה ----------
+  var popsvg = document.getElementById("popsvg"), COLS = 20, CELL = 34, tiles = [];
+  popsvg.setAttribute("viewBox", "0 0 " + (COLS * CELL) + " " + (Math.ceil(POP.length / COLS) * CELL));
+  POP.forEach(function (v, i) {
+    var x = (i % COLS) * CELL, y = Math.floor(i / COLS) * CELL;
+    var g = el(popsvg, "g", {});
+    var r = el(g, "rect", { x: x + 2, y: y + 2, width: CELL - 4, height: CELL - 4, rx: 4, fill: "var(--tile)", "fill-opacity": (0.08 + v * 0.075).toFixed(2) });
+    var t = el(g, "text", { x: x + CELL / 2, y: y + CELL / 2 + 5, "text-anchor": "middle", "font-size": 14, "font-weight": 700,
+      "font-family": FONT, fill: v >= 7 ? "var(--paper)" : "var(--ink)" }, v);
+    tiles.push({ r: r, t: t, v: v });
+  });
+  function highlight(idx, biased) {
+    tiles.forEach(function (o) { o.r.setAttribute("stroke", "none"); o.r.setAttribute("fill", "var(--tile)"); o.r.setAttribute("fill-opacity", (0.08 + o.v * 0.075).toFixed(2));
+      o.t.setAttribute("fill", o.v >= 7 ? "var(--paper)" : "var(--ink)"); });
+    idx.forEach(function (i) { var o = tiles[i]; o.r.setAttribute("fill", "var(--pick)"); o.r.setAttribute("fill-opacity", 1);
+      o.r.setAttribute("stroke", biased ? "var(--bias)" : "var(--ink)"); o.r.setAttribute("stroke-width", 3); o.t.setAttribute("fill", "#1b2230"); });
+  }
+
+  // ---------- טבלת המדדים ----------
+  var resTable = document.getElementById("resTable"), last = null;
+  function modeText(m) { return m.length > 1 ? ltr(m.join(", ")) : String(m[0]); }
+  function renderRes() {
+    var h = '<tr><th></th><th>גודל</th><th class="m1">ממוצע</th><th class="m2">חציון</th><th class="m3">שכיח</th><th class="m4">טווח</th></tr>';
+    h += '<tr><td class="lbl">כל האוכלוסייה</td><td>300</td><td>' + fmt(PM.mean) + "</td><td>" + fmt(PM.median) + "</td><td>" + modeText(PM.modes) + "</td><td>" + PM.range + "</td></tr>";
+    if (last) {
+      var v = last.idx.map(function (i) { return POP[i]; }), m = modes(v).vals;
+      var mErr = m.length === 1 && PM.modes.length === 1 ? sgn(m[0] - PM.modes[0]) : "יותר משכיח אחד";
+      h += '<tr><td class="lbl">המדגם האחרון (' + (last.biased ? "מוטה" : "אקראי") + ")</td><td>" + v.length + "</td><td>" + fmt(mean(v)) + "</td><td>" + fmt(median(v)) + "</td><td>" + modeText(m) + "</td><td>" + range(v) + "</td></tr>";
+      h += '<tr class="err"><td class="lbl">שגיאת הדגימה</td><td></td><td>' + ltr(sgn(mean(v) - PM.mean)) + "</td><td>" + ltr(sgn(median(v) - PM.median)) + "</td><td>" + (mErr.charAt(0) === "י" ? mErr : ltr(mErr)) + "</td><td>" + ltr(sgn(range(v) - PM.range)) + "</td></tr>";
+    } else h += '<tr><td class="lbl">המדגם האחרון</td><td colspan="5" class="hint">עוד לא הוגרל מדגם. לחצו ״מדגם אקראי אחד״.</td></tr>';
+    resTable.innerHTML = h;
+  }
+
+  // ---------- תרשים הנקודות ----------
+  var lanes = {}, ORDER = ["r5", "r10", "r30", "r60", "b5", "b10", "b30", "b60"];
+  var dotsvg = document.getElementById("dotsvg"), laneTable = document.getElementById("laneTable");
+  function addMean(biased, n, mval) { var k = (biased ? "b" : "r") + n; (lanes[k] = lanes[k] || { biased: biased, n: n, means: [] }).means.push(mval); }
+  function laneName(L) { return (L.biased ? "מוטה" : "אקראי") + ", גודל " + L.n; }
+  function renderDots() {
+    clear(dotsvg);
+    var keys = ORDER.filter(function (k) { return lanes[k]; });
+    var W = 700, mL = 20, mR = 120, mT = 26, LH = 78, X0 = 1.5, X1 = 8.5;
+    var H = mT + Math.max(1, keys.length) * LH + 34;
+    dotsvg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var x = function (v) { return mL + (Math.min(X1, Math.max(X0, v)) - X0) / (X1 - X0) * (W - mL - mR); };
+    var g = el(dotsvg, "g", { "font-family": FONT, fill: "currentColor" });
+    var yAxis = mT + Math.max(1, keys.length) * LH;
+    for (var t = 2; t <= 8; t += 0.5) {
+      el(g, "line", { x1: x(t), x2: x(t), y1: mT - 6, y2: yAxis, stroke: "var(--grid)" });
+      if (t % 1 === 0) el(g, "text", { x: x(t), y: yAxis + 18, "text-anchor": "middle", "font-size": 13 }, t);
+    }
+    el(g, "line", { x1: mL, x2: W - mR, y1: yAxis, y2: yAxis, stroke: "currentColor", "stroke-width": 1.5 });
+    el(g, "text", { x: (mL + W - mR) / 2, y: yAxis + 34, "text-anchor": "middle", "font-size": 13 }, "ממוצע המדגם (שעות מסך ביום)");
+    el(g, "line", { x1: x(PM.mean), x2: x(PM.mean), y1: mT - 14, y2: yAxis, stroke: "currentColor", "stroke-width": 2, "stroke-dasharray": "6 4" });
+    el(g, "text", { x: x(PM.mean), y: mT - 16, "text-anchor": "middle", "font-size": 12, "font-weight": 700 }, "ממוצע האוכלוסייה " + fmt(PM.mean));
+    if (!keys.length) el(g, "text", { x: (mL + W - mR) / 2, y: mT + LH / 2 + 4, "text-anchor": "middle", "font-size": 14, fill: "var(--muted)" }, "עוד אין מדגמים. הגרילו מדגם כדי לראות כאן נקודות.");
+    keys.forEach(function (k, li) {
+      var L = lanes[k], base = mT + (li + 1) * LH - 6, bins = {}, maxS = 1;
+      L.means.forEach(function (m) { var b = Math.round(m * 10); bins[b] = (bins[b] || 0) + 1; if (bins[b] > maxS) maxS = bins[b]; });
+      var step = Math.min(8, (LH - 16) / maxS), seen = {};
+      if (li) el(g, "line", { x1: mL, x2: W - mR, y1: mT + li * LH, y2: mT + li * LH, stroke: "var(--line)", "stroke-dasharray": "2 3" });
+      L.means.forEach(function (m) { var b = Math.round(m * 10), s = seen[b] = (seen[b] || 0) + 1;
+        el(g, "circle", { cx: x(b / 10), cy: base - (s - 1) * step - 4, r: 3.6, fill: L.biased ? "var(--bias)" : "var(--rnd)", "fill-opacity": .8 }); });
+      el(g, "text", { x: W - 6, y: base - LH / 2 + 12, "font-size": 13, "font-weight": 700, direction: "rtl", "text-anchor": "start",
+        fill: L.biased ? "var(--bias)" : "var(--rnd)" }, laneName(L));
+    });
+
+    var h = "<tr><th>סוג המדגם</th><th>מספר מדגמים</th><th>הממוצע הקטן ביותר</th><th>הממוצע הגדול ביותר</th><th>טווח הממוצעים</th><th>ממוצע כל הממוצעים</th></tr>";
+    if (!keys.length) h += '<tr><td colspan="6" class="hint">עוד אין מדגמים.</td></tr>';
+    keys.forEach(function (k) { var L = lanes[k], mn = Math.min.apply(null, L.means), mx = Math.max.apply(null, L.means);
+      h += '<tr><td class="lbl" style="color:' + (L.biased ? "var(--bias)" : "var(--rnd)") + '">' + laneName(L) + "</td><td>" + L.means.length + "</td><td>" + fmt(mn) + "</td><td>" + fmt(mx) + "</td><td>" + fmt(mx - mn) + "</td><td>" + fmt(mean(L.means)) + "</td></tr>"; });
+    laneTable.innerHTML = h;
+  }
+
+  function draw(times, biased) {
+    var n = +document.getElementById("nSel").value, idx;
+    for (var i = 0; i < times; i++) { idx = sampleIdx(n, biased); addMean(biased, n, mean(idx.map(function (j) { return POP[j]; }))); }
+    last = { idx: idx, biased: biased }; highlight(idx, biased); renderRes(); renderDots();
+  }
+  document.getElementById("b1r").onclick = function () { draw(1, false); };
+  document.getElementById("b1b").onclick = function () { draw(1, true); };
+  document.getElementById("b100r").onclick = function () { draw(100, false); };
+  document.getElementById("b100b").onclick = function () { draw(100, true); };
+  document.getElementById("bClear").onclick = function () { lanes = {}; last = null; highlight([], false); renderRes(); renderDots(); };
+  renderRes(); renderDots();
+
+  // ---------- שאלה 2: נתוני מאיה ----------
+  var MAYA = [10, 5, 35, 15, 10, 40, 10, 8, 30, 12, 10, 45, 15, 5, 35, 10, 20, 12, 95, 8];
+  var RES = "ע ע מ ע ע מ ע ע מ ע ע מ ע ע מ ע ע ע א ע".split(" ");
+  var RESNAME = { "ע": "עיר", "מ": "מושב", "א": "עיר אחרת" }, RESCOL = { "ע": "var(--town)", "מ": "var(--mosh)", "א": "var(--far)" };
+  (function () {
+    var svg = document.getElementById("q2fig"), W = 700, H = 380, m = { l: 64, r: 16, t: 34, b: 58 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b, max = 100;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var g = el(svg, "g", { "font-family": FONT, fill: "currentColor" });
+    var y = function (v) { return m.t + ih - v / max * ih; }, step = iw / MAYA.length;
+    for (var v = 0; v <= max; v += 10) {
+      el(g, "line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: "var(--grid)" });
+      el(g, "text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 12 }, v);
+    }
+    el(g, "line", { x1: m.l, x2: m.l, y1: m.t - 6, y2: m.t + ih, stroke: "currentColor", "stroke-width": 1.5 });
+    el(g, "line", { x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih, stroke: "currentColor", "stroke-width": 1.5 });
+    el(g, "text", { "text-anchor": "middle", "font-size": 13, transform: "translate(16," + (m.t + ih / 2) + ") rotate(-90)" }, "זמן הגעה (דקות)");
+    el(g, "text", { x: m.l + iw / 2, y: H - 10, "text-anchor": "middle", "font-size": 13 }, "מספר התלמיד במדגם");
+    MAYA.forEach(function (v, i) {
+      var cx = m.l + step * (i + .5), bw = step * .64;
+      el(g, "rect", { x: cx - bw / 2, y: y(v), width: bw, height: m.t + ih - y(v), fill: RESCOL[RES[i]] });
+      el(g, "text", { x: cx, y: y(v) - 5, "text-anchor": "middle", "font-size": 12, "font-weight": 700 }, v);
+      el(g, "text", { x: cx, y: m.t + ih + 17, "text-anchor": "middle", "font-size": 12 }, i + 1);
+    });
+    var rows = [["מספר תלמיד", "מקום מגורים", "זמן הגעה (דקות)"]].concat(MAYA.map(function (v, i) { return [i + 1, RESNAME[RES[i]], v]; }));
+    var t = document.getElementById("q2table");
+    rows.forEach(function (r, ri) { var tr = document.createElement("tr");
+      r.forEach(function (c) { var cell = document.createElement(ri ? "td" : "th"); cell.textContent = c; tr.appendChild(cell); }); t.appendChild(tr); });
+    var btn = document.getElementById("copyQ2"), label = btn.textContent, tsv = rows.map(function (r) { return r.join("\t"); }).join("\r\n");
+    function done(ok) { btn.textContent = ok ? "הטבלה הועתקה" : "ההעתקה נכשלה. סמנו את הטבלה והעתיקו ידנית"; btn.classList.toggle("ok", ok);
+      setTimeout(function () { btn.textContent = label; btn.classList.remove("ok"); }, 2500); }
+    function fallback() { var ta = document.createElement("textarea"); ta.value = tsv; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); done(ok); }
+    btn.addEventListener("click", function () { try { if (navigator.clipboard) navigator.clipboard.writeText(tsv).then(function () { done(true); }, fallback); else fallback(); } catch (e) { fallback(); } });
+  })();
+
+  // ---------- חלק ד: טבלת המדגמים ----------
+  var XK = {
+    typo: 1285, b_range: 71.5, b_mean: 7.46, b_median: 7.5,
+    pop: { mean: 7.35, median: 7.5, mode: 8, range: 8 },
+    grade: { "ט": 8.07, "י": 7.73, "יא": 6.99, "יב": 6.62 },
+    rnd40: { mean: 7.56, median: 7.5, mode: 7.5, range: 5, err: 0.21, pyb: 25 },
+    rnd120: { mean: 7.41, median: 7.5, mode: 7.5, range: 5.5, err: 0.06, pyb: 21.67 },
+    cls: { mean: 6.67, median: 6.5, mode: 6, range: 7, err: -0.69, pyb: 100 },
+    ins: { mean: 6.4, median: 6.5, mode: 6.5, range: 6, err: -0.95, pyb: 40.83 }
+  };
+  (function () {
+    var SAMPLES = [["rnd40", "אלה: אקראי 40", "אלה"], ["rnd120", "מזכירות: אקראי 120", "מזכירות"], ["cls", "עידו: הכיתה שלו", "עידו"], ["ins", "שחר: אינסטגרם", "שחר"]];
+    var COLS = [["mean", "ממוצע"], ["median", "חציון"], ["mode", "שכיח"], ["range", "טווח"], ["err", "שגיאת דגימה בממוצע"], ["pyb", "אחוז תלמידי י״ב"]];
+    var h = "<tr><th></th>"; COLS.forEach(function (c) { h += "<th>" + c[1] + "</th>"; }); h += "</tr>";
+    SAMPLES.forEach(function (s) {
+      h += '<tr><td class="lbl">' + s[1] + "</td>";
+      COLS.forEach(function (c) { h += '<td><input type="text" class="nbox" data-col="אקסל ג1 ' + s[2] + " " + c[1] + '" data-key="' + s[0] + "." + c[0] + '" aria-label="' + s[1] + " " + c[1] + '"></td>'; });
+      h += "</tr>";
+    });
+    document.getElementById("xgrid").innerHTML = h;
+  })();
+  function xkey(path) { return path.split(".").reduce(function (o, p) { return o == null ? o : o[p]; }, XK); }
+  function parseNum(s) { s = String(s).trim().replace(/\s/g, "").replace(",", ".").replace("%", "").replace("−", "-"); return s === "" || isNaN(+s) ? null : +s; }
+  function checkNums() {
+    var ok = 0, tot = 0;
+    Array.prototype.forEach.call(document.querySelectorAll("input[data-key]"), function (inp) {
+      var want = xkey(inp.dataset.key), got = parseNum(inp.value), tol = /pyb/.test(inp.dataset.key) ? 0.06 : 0.015;
+      var good = got != null && Math.abs(got - want) <= tol; tot++; if (good) ok++;
+      inp.classList.toggle("okc", good); inp.classList.toggle("noc", !good);
+      var m = inp.parentNode.querySelector(".mark");
+      if (!m) { m = document.createElement("span"); m.className = "mark"; inp.parentNode.appendChild(m); }
+      m.className = "mark " + (good ? "ok" : "no"); m.innerHTML = good ? "✔" : "✘ התשובה: <span class=\"ltr\">" + want + "</span>";
+    });
+    document.getElementById("score").textContent = "חלק ד': תשובות מספריות נכונות " + ok + " מתוך " + tot + ". שאר התשובות ייבדקו על ידי המורה.";
+  }
+  function reveal() { if (!SHOW_ANSWERS_AFTER_SUBMIT) return; checkNums(); document.body.classList.add("submitted"); }
+
+  // ---------- שמירה בדפדפן ----------
+  var KEY = "smpx-answers", saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} }
+  [["stName", "_name"], ["stClass", "_cls"]].forEach(function (p) {
+    var inp = document.getElementById(p[0]); if (saved[p[1]]) inp.value = saved[p[1]];
+    inp.addEventListener("input", function () { saved[p[1]] = inp.value; persist(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("textarea[data-k]:not([readonly])"), function (t) {
+    if (saved[t.dataset.k]) t.value = saved[t.dataset.k];
+    t.addEventListener("input", function () { saved[t.dataset.k] = t.value; persist(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("input[data-col]"), function (t) {
+    var k = "c:" + t.dataset.col; if (saved[k] != null) t.value = saved[k];
+    t.addEventListener("input", function () { saved[k] = t.value; persist(); });
+  });
+
+  // ---------- המדגם של התלמיד (1.1) ----------
+  var mySample = Array.isArray(saved._mine) ? saved._mine : null;
+  var myBtn = document.getElementById("mySampleBtn");
+  function showMine() {
+    if (!mySample) return;
+    document.getElementById("mySample").value = mySample.join(", ");
+    document.getElementById("myChips").innerHTML = mySample.map(function (v) { return "<span>" + v + "</span>"; }).join("");
+    myBtn.disabled = true; myBtn.textContent = "המדגם שלכם הוגרל";
+  }
+  myBtn.addEventListener("click", function () {
+    if (mySample) return;
+    mySample = sampleIdx(10, false).map(function (i) { return POP[i]; });
+    saved._mine = mySample; persist(); showMine(); buildAnswers();
+  });
+  showMine();
+
+  // ---------- תשובות (מוצגות אחרי ההגשה) ----------
+  function mineAnswer() {
+    if (!mySample) return "<p>לא הוגרל מדגם, ולכן אין כאן תשובה אישית. חזרו על החישוב עם מדגם כלשהו מהמעבדה.</p>";
+    var s = sorted(mySample), sum = s.reduce(function (a, b) { return a + b; }, 0), md = modes(mySample);
+    return "<p>המדגם שלכם ממוין: " + ltr(s.join(", ")) + "</p><ul>" +
+      "<li>ממוצע: " + ltr(sum + " ÷ 10 = " + fmt(sum / 10)) + "</li>" +
+      "<li>חציון: יש 10 ערכים, לכן לוקחים את הממוצע של הערך החמישי והשישי: " + ltr("(" + s[4] + " + " + s[5] + ") ÷ 2 = " + fmt((s[4] + s[5]) / 2)) + "</li>" +
+      "<li>שכיח: " + (md.count === 1 ? "כל ערך מופיע פעם אחת, ולכן אין שכיח" : md.vals.join(" ו-") + " (מופיע " + md.count + " פעמים)") + "</li>" +
+      "<li>טווח: " + ltr(s[9] + " − " + s[0] + " = " + (s[9] - s[0])) + "</li></ul>";
+  }
+  function errAnswer() {
+    var base = "<p>שגיאת הדגימה = ממוצע המדגם − ממוצע האוכלוסייה.";
+    if (mySample) { var m = mean(mySample); base += " אצלכם: " + ltr(fmt(m) + " − 4.5 = " + sgn(m - 4.5)) + "."; }
+    return base + "</p><p>ההפרש נובע מהמזל של ההגרלה: בכל מדגם נבחרים תלמידים אחרים, ולפעמים במקרה נבחרים יותר תלמידים עם הרבה שעות או עם מעט שעות. זו לא טעות בחישוב ולא הטיה. במדגם אקראי ההפרש הזה יכול לצאת פעם חיובי ופעם שלילי.</p>";
+  }
+  var ANSWERS = {
+    q1_3: "<p>בדרך כלל יוצא בערך כך (אצלכם המספרים יהיו מעט שונים):</p><ul><li>גודל 5: ממוצעים בין כ-2.5 לכ-7, טווח ממוצעים של כ-4 שעות.</li><li>גודל 60: ממוצעים בין כ-4 לכ-5.1, טווח ממוצעים של כ-1 שעה.</li></ul><p><b>מסקנה:</b> ככל שהמדגם גדול יותר, הממוצעים קרובים יותר לממוצע האמיתי (4.5), כלומר שגיאת הדגימה קטנה יותר. במדגם גדול ערך חריג אחד משפיע פחות, וערכים גבוהים ונמוכים ״מאזנים״ זה את זה.</p>",
+    q1_4: "<p>הממוצעים של המדגמים המוטים נמצאים <b>מימין לקו</b>, בערך סביב 5.4, כלומר כמעט כולם גבוהים מ-4.5. בסקר בסטורי עונים יותר תלמידים שנמצאים הרבה בטלפון.</p><p>הגדלת המדגם <b>לא</b> פותרת את זה: המדגמים המוטים בגודל 60 צפופים, אבל סביב המקום הלא נכון.</p><p><b>ההבדל:</b> שגיאת דגימה היא פיזור מקרי לשני הכיוונים, והיא קטנה כשמגדילים את המדגם. הטיה היא סטייה קבועה לכיוון אחד, שנובעת מהדרך שבה נבחר המדגם, והיא לא קטנה כשמגדילים את המדגם. מתקנים אותה רק בבחירה אקראית.</p>",
+    q1_5: "<p><b>לא.</b> הטווח של מדגם אף פעם לא גדול מ-9. כל הערכים במדגם לקוחים מהאוכלוסייה, ולכן הערך הגדול ביותר במדגם הוא לכל היותר 10 והקטן ביותר לפחות 1.</p><p>במדגם של 5 תלמידים, הסיכוי ש״יפלו״ עליו גם תלמיד עם שעה אחת וגם תלמיד עם 10 שעות קטן מאוד: באוכלוסייה יש רק 13 תלמידים עם שעה אחת ורק 5 עם 10 שעות. לכן הטווח במדגם קטן הוא בדרך כלל קטן מ-9. ככל שהמדגם גדל, הטווח שלו מתקרב ל-9.</p>",
+    q2_1: "<ul><li><b>דנה: לא אקראי</b>, מדגם נוחות (הטיית בחירה). כל החברים שלה גרים ליד בית הספר, ואין במדגם תלמידים מהמושבים. הממוצע (7 דקות) <b>נמוך מדי</b>.</li><li><b>נועם: לא אקראי</b>, הטיית בחירה. הוא שאל רק תלמידים שמגיעים באוטובוס מהמושבים, שהנסיעה שלהם ארוכה. הממוצע (38 דקות) <b>גבוה מדי</b>.</li><li><b>יואב: לא אקראי</b>, הטיית התנדבות. עונים מי שרוצים, וכנראה בעיקר מי שהדרך הארוכה מפריעה לו, ולכן הממוצע (31 דקות) <b>גבוה מדי</b>. בנוסף, רק מי שנמצא בקבוצה יכול לענות.</li><li><b>מאיה: אקראי.</b> לכל אחד מ-600 התלמידים היה אותו סיכוי להיבחר, ולכן אין הטיה. עדיין תהיה שגיאת דגימה.</li></ul>",
+    q2_2: "<p>ממוינים: 5, 5, 8, 8, 10, 10, 10, 10, 10, 12, 12, 15, 15, 20, 30, 35, 35, 40, 45, 95</p><ul><li>ממוצע: " + ltr("430 ÷ 20 = 21.5") + " דקות</li><li>חציון: יש 20 ערכים, ולכן לוקחים את הממוצע של הערך העשירי והאחד-עשר: " + ltr("(12 + 12) ÷ 2 = 12") + " דקות</li><li>שכיח: 10 דקות (מופיע 5 פעמים)</li><li>טווח: " + ltr("95 − 5 = 90") + " דקות</li></ul>",
+    q2_3: "<table class='data'><tr><th></th><th>עיר</th><th>מושב</th><th>עיר אחרת</th></tr><tr><td>בית הספר</td><td>" + ltr("400/600 ≈ 67%") + "</td><td>" + ltr("180/600 = 30%") + "</td><td>" + ltr("20/600 ≈ 3%") + "</td></tr><tr><td>המדגם</td><td>" + ltr("14/20 = 70%") + "</td><td>" + ltr("5/20 = 25%") + "</td><td>" + ltr("1/20 = 5%") + "</td></tr></table><p style='margin-top:6px'>המדגם <b>די מייצג</b>: האחוזים קרובים, אבל לא זהים. במדגם יש מעט פחות תלמידים מהמושבים.</p><p>ההבדל נובע משגיאת דגימה: ההגרלה אקראית, אבל במקרה נבחרו מעט יותר תלמידים מהעיר. זו לא הטיה, כי לכל תלמיד היה אותו סיכוי. במדגם גדול יותר האחוזים צפויים להיות קרובים יותר.</p>",
+    q2_4: "<p>כדאי להשתמש ב<b>חציון (12 דקות)</b> או ב<b>שכיח (10 דקות)</b>.</p><p>הממוצע (21.5) מושפע מערך חריג אחד, התלמיד מעיר אחרת שנוסע 95 דקות, ומחמשת התלמידים מהמושבים. רק 6 מתוך 20 תלמידים נוסעים יותר מ-21.5 דקות, כך ש-21.5 לא מתאר תלמיד טיפוסי. החציון אומר שחצי מהתלמידים מגיעים תוך 12 דקות או פחות.</p><p>אפשר גם להציע למועצה לדווח בנפרד על תלמידי העיר ועל תלמידי המושבים, כי אלה שתי קבוצות שונות מאוד.</p>",
+    q2_5: "<p>במדגם יש 5 תלמידים מהמושבים (30, 35, 35, 40, 45). אחרי הקיצור: 20, 25, 25, 30, 35.</p><ul><li><b>ממוצע: יקטן.</b> הסכום קטן ב-" + ltr("5 × 10 = 50") + ", ולכן " + ltr("380 ÷ 20 = 19") + ".</li><li><b>חציון: לא ישתנה (12).</b> כל התלמידים מהמושבים נמצאים בחצי העליון של הנתונים, וגם אחרי הקיצור הם נשארים מעל 12. הערך העשירי והאחד-עשר עדיין 12 ו-12.</li><li><b>שכיח: לא ישתנה (10).</b> אף תלמיד שנוסע 10 דקות לא גר במושב.</li><li><b>טווח: לא ישתנה (90).</b> המינימום (5) והמקסימום (95, התלמיד מעיר אחרת) לא גרים במושב, ולכן לא השתנו.</li></ul>",
+    x_a3: "<ul><li><b>טווח:</b> תלוי רק במקסימום ובמינימום, וה-75 הפך למקסימום, לכן הטווח קפץ מ-8 ל-71.5. טווח לא הגיוני (אף אחד לא ישן 75 שעות) הוא סימן לטעות בנתונים.</li><li><b>ממוצע:</b> מושפע מכל ערך. הסכום גדל ב-67.5, אבל מחולק ב-600, ולכן הממוצע עלה רק בכ-0.11 (מ-7.35 ל-7.46).</li><li><b>חציון:</b> ערך אחד שעבר מאמצע הנתונים לקצה העליון כמעט לא משנה את הסדר באמצע, לכן החציון נשאר 7.5.</li></ul>",
+    x_b1: "<p><code>=LEFT(C2,FIND(\"-\",C2)-1)</code><br>FIND מוצאת איפה נמצא המקף, ו-LEFT לוקחת את כל התווים שלפניו.</p>",
+    x_b3: "<p>ככל שהשכבה גבוהה יותר, ישנים פחות: מ-8.07 שעות בט׳ עד 6.62 בי״ב. לכן אם במדגם יש יותר מדי תלמידים משכבה מסוימת, הממוצע יוטה. מדגם מייצג צריך לכלול את השכבות בערך באותו יחס כמו בבית הספר (25% מכל שכבה).</p>",
+    x_c2: "<p><code>=VLOOKUP($C4,אוכלוסייה!$A:$E,4,FALSE)</code><br>מחפשים את הקוד שחילצתם בעמודה C בגיליון האוכלוסייה, ומחזירים את העמודה הרביעית (שעות שינה). FALSE פירושו התאמה מדויקת.</p>",
+    x_c3: "<p><code>=VALUE(MID(B4,FIND(\"(\",B4)+1,4))</code><br>FIND מוצאת את הסוגריים, MID לוקחת 4 תווים אחריהם, ו-VALUE הופכת את הטקסט למספר כדי ש-VLOOKUP ימצא אותו.</p>",
+    x_d1: "<ul><li><b>עידו: לא אקראי.</b> מדגם נוחות (הטיית בחירה): הוא שאל רק את הכיתה שלו. כל התלמידים בי״ב, השכבה שישנה הכי מעט (6.62 בטבלת הציר), ולכן הממוצע (6.67) נמוך מדי.</li><li><b>שחר: לא אקראי.</b> הטיית התנדבות: עונה מי שרואה את הסטורי ובוחר לענות. הסטורי עלה ב-23:30, ולפי ״שעת מילוי״ רוב התשובות נשלחו אחרי חצות, כלומר ענו בעיקר תלמידים שהיו ערים, וישנים פחות. לכן הממוצע (6.4) נמוך מדי.</li></ul>",
+    x_d2: "<p>שגיאת הדגימה של המזכירות קטנה יותר (0.06 לעומת 0.21). במדגם גדול יותר המזל משפיע פחות: ערכים גבוהים ונמוכים מאזנים זה את זה. זה לא מובטח תמיד: גם מדגם קטן יכול במקרה לצאת קרוב, אבל <b>בדרך כלל</b> מדגם אקראי גדול יותר מדויק יותר.</p>",
+    x_d3: "<p>המדגם של המזכירות אקראי, ולכן השגיאה שלו קטנה (0.06) ונובעת רק מהמזל של ההגרלה. הסקר של שחר מוטה, והשגיאה שלו גדולה (-0.95) ובכיוון אחד, כי מי שענה שונה משאר התלמידים. <b>גודל המדגם מקטין שגיאת דגימה, אבל לא מתקן הטיה.</b> מה שקובע הוא איך בוחרים את המדגם.</p>",
+    x_d4: "<p>אלה 25%, המזכירות כ-21.7%, עידו 100%, שחר כ-40.8%. הכי פחות מייצג הוא המדגם של עידו (100% י״ב), ואחריו הסקר של שחר. במדגמים שיש בהם יותר תלמידי י״ב, שישנים פחות, הממוצע נמוך יותר. במדגמים האקראיים האחוז קרוב ל-25%, וההפרש הקטן נובע משגיאת דגימה.</p>",
+    q2_6: "<ul><li><b>א.</b> " + ltr("21.5 − 19 = 2.5") + " דקות. הממוצע של מאיה גבוה ב-2.5 דקות מהממוצע האמיתי.</li><li><b>ב.</b> הסקר של יואב <b>מוטה</b> (הטיית התנדבות). הטעות שלו היא " + ltr("31 − 19 = 12") + " דקות, והיא לא נובעת מגודל המדגם אלא מהדרך שבה הוא נבחר. מדגם גדול מקטין שגיאת דגימה, אבל לא מתקן הטיה. מדגם קטן ואקראי עדיף על מדגם גדול ומוטה.</li><li><b>ג.</b> להגריל מדגם אקראי <b>גדול יותר</b>, למשל 60 או 100 תלמידים. זה לא מבטיח שהממוצע ייצא בדיוק 19, אבל הוא יהיה כנראה קרוב יותר.</li></ul>"
+  };
+  function buildAnswers() {
+    ANSWERS.q1_1 = mineAnswer(); ANSWERS.q1_2 = errAnswer();
+    Array.prototype.forEach.call(document.querySelectorAll(".q[data-a]"), function (q) {
+      var html = ANSWERS[q.dataset.a]; if (!html) return;
+      var d = q.querySelector("details.ans");
+      if (!d) { d = document.createElement("details"); d.className = "ans"; q.appendChild(d); }
+      d.innerHTML = '<summary><span class="show">הצגת תשובה (נסו קודם לבד)</span><span class="hide">הסתרת התשובה</span></summary><div class="a">' + html + "</div>";
+    });
+  }
+  buildAnswers();
+
+  // ---------- הגשה ----------
+  var SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzrJave6Aq3qf_kRFaUYVBTds_nRSeUYSlrct2G2n2OlKq0ZUDIKsxF6qBKJhbdYsXG1w/exec";
+  var QUIZ_NAME = "מדגם ושגיאת דגימה + Excel";
+  var SENT_KEY = "smpx-submitted";
+  var btn = document.getElementById("submitBtn"), msg = document.getElementById("submitMsg");
+  var nameEl = document.getElementById("stName"), clsEl = document.getElementById("stClass");
+  var confirmEmpty = false, confirmAgain = false;
+  function say(text, cls) { msg.textContent = text; msg.className = "msg " + (cls || ""); }
+  try { if (localStorage.getItem(SENT_KEY)) { reveal(); say("כבר הגשתם מהמחשב הזה ב-" + localStorage.getItem(SENT_KEY) + ". אפשר להגיש שוב, וההגשה תישמר כשורה נוספת.", "warn"); } } catch (e) {}
+  btn.addEventListener("click", function () {
+    var name = nameEl.value.trim(), cls = clsEl.value.trim();
+    nameEl.classList.toggle("err", !name); clsEl.classList.toggle("err", !cls);
+    if (!name || !cls) { say("כתבו שם מלא וכיתה בראש הדף לפני ההגשה.", "bad"); (name ? clsEl : nameEl).focus(); return; }
+    var answers = {}, empty = 0;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-col]"), function (t) {
+      answers[t.dataset.col] = t.value.trim(); if (!t.value.trim()) empty++;
+    });
+    if (empty && !confirmEmpty) { confirmEmpty = true; say("יש " + empty + " תיבות ריקות" + (mySample ? "" : ", וגם לא הגרלתם מדגם בשאלה 1.1") + ". כדי להגיש בכל זאת, לחצו שוב על ״הגשה״.", "warn"); return; }
+    var already = false; try { already = !!localStorage.getItem(SENT_KEY); } catch (e) {}
+    if (already && !confirmAgain) { confirmAgain = true; say("כבר הגשתם. כדי להגיש שוב, לחצו שוב על ״הגשה״.", "warn"); return; }
+    btn.disabled = true; say("שולח...", "");
+    fetch(SUBMIT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ quiz: QUIZ_NAME, name: name, cls: cls, answers: answers }) })
+      .then(function () {
+        var when = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+        try { localStorage.setItem(SENT_KEY, when); } catch (e) {}
+        reveal();
+        say("התשובות נשלחו בהצלחה (" + when + ")." + (SHOW_ANSWERS_AFTER_SUBMIT ? " עכשיו אפשר לפתוח את ״הצגת תשובה״ מתחת לכל סעיף." : ""), "ok");
+        confirmEmpty = false; confirmAgain = false; btn.disabled = false;
+      })
+      .catch(function () { btn.disabled = false; say("השליחה נכשלה. בדקו את החיבור לאינטרנט ונסו שוב. אם זה חוזר, הדפיסו את הדף ושמרו כ-PDF.", "bad"); });
+  });
+})();
+</script>
+</body>
+</html>
