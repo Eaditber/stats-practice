@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>טבלת ציר (PIVOT): הסבר, מעבדה, שאלות ו-Excel</title>
+<style>
+  :root {
+    --bg: #eef1f5; --paper: #ffffff; --ink: #1b2230; --muted: #5b6475;
+    --head: #12395c; --accent: #1f5f99; --soft: #e6eef7; --line: #c9d1dc;
+    --grid: #e3e7ee; --src: #fbf8ef; --srcline: #e5dcc0;
+    --zf: #8e5bd0; --zc: #11795e; --zr: #1d5fa8; --zv: #c2410c;
+    --zfbg: #efe7fa; --zcbg: #ddf2ea; --zrbg: #e1ecf8; --zvbg: #fce9dc;
+    --sub: #f3f6fa; --tot: #e6eef7; --stale: #fff4d6; --staleline: #e0b200;
+    --good: #2e7d4f; --goodbg: #e3f4ea; --badbg: #fbe7e4; --bad: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161d; --paper: #1b2029; --ink: #e7eaf0; --muted: #a0a8b7;
+      --head: #9cc4ea; --accent: #8db9e6; --soft: #233142; --line: #3a4250;
+      --grid: #2a313c; --src: #24221c; --srcline: #4a4433;
+      --zf: #b393ec; --zc: #4cc39e; --zr: #7fb0ea; --zv: #f08a52;
+      --zfbg: #2b2340; --zcbg: #15332a; --zrbg: #1c2c40; --zvbg: #3a2418;
+      --sub: #20262f; --tot: #233142; --stale: #3a3420; --staleline: #e0b200;
+      --good: #6fd29a; --goodbg: #17301f; --badbg: #3a1d1a; --bad: #ef7b6c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161d; --paper: #1b2029; --ink: #e7eaf0; --muted: #a0a8b7;
+    --head: #9cc4ea; --accent: #8db9e6; --soft: #233142; --line: #3a4250;
+    --grid: #2a313c; --src: #24221c; --srcline: #4a4433;
+    --zf: #b393ec; --zc: #4cc39e; --zr: #7fb0ea; --zv: #f08a52;
+    --zfbg: #2b2340; --zcbg: #15332a; --zrbg: #1c2c40; --zvbg: #3a2418;
+    --sub: #20262f; --tot: #233142; --stale: #3a3420; --staleline: #e0b200;
+    --good: #6fd29a; --goodbg: #17301f; --badbg: #3a1d1a; --bad: #ef7b6c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Assistant", "Segoe UI", Arial, sans-serif; font-size: 17px; line-height: 1.65; }
+  main { max-width: 900px; margin: 0 auto; padding: 28px 16px 64px; }
+  .paper { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 28px 32px; margin-bottom: 28px; }
+  h1 { font-size: 1.55rem; color: var(--head); margin: 0 0 6px; }
+  h2 { font-size: 1.3rem; color: var(--head); margin: 26px 0 8px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 1.05rem; margin: 16px 0 4px; }
+  p { margin: 0 0 10px; }
+  .fict { color: var(--muted); font-style: italic; font-size: .85rem; }
+  .parthead { background: var(--soft); border-radius: 8px; padding: 10px 16px; margin-bottom: 18px; font-size: 1.05rem; }
+  .parthead b { color: var(--head); }
+  .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  .term { font-weight: 800; color: var(--head); }
+  .key { background: var(--soft); border-inline-start: 5px solid var(--accent); border-radius: 8px; padding: 10px 16px; margin: 12px 0; }
+  .key p:last-child { margin: 0; }
+  .key.warn { border-inline-start-color: var(--staleline); background: var(--stale); }
+  .menu { font-weight: 700; color: var(--head); white-space: nowrap; }
+
+  .flow { display: flex; align-items: stretch; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+  .flow .box { flex: 1 1 180px; border: 2px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--paper); min-width: 0; }
+  .flow .box b { display: block; color: var(--head); font-size: 1.05rem; }
+  .flow .box small { color: var(--muted); }
+  .flow .arr { align-self: center; font-size: 1.6rem; color: var(--muted); }
+  @media (max-width: 640px) { .flow .arr { transform: rotate(-90deg); flex-basis: 100%; text-align: center; } }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+  .cards.c2 { grid-template-columns: repeat(2, 1fr); }
+  .cards .c { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; border-top: 6px solid var(--accent); min-width: 0; }
+  .cards .c.b { border-top-color: var(--bad); }
+  .cards .c.zf { border-top-color: var(--zf); } .cards .c.zc { border-top-color: var(--zc); }
+  .cards .c.zr { border-top-color: var(--zr); } .cards .c.zv { border-top-color: var(--zv); }
+  .cards .c h3 { margin: 0 0 4px; }
+  .cards .c p { font-size: .93rem; margin: 0 0 6px; }
+  .cards .c .eg { color: var(--muted); font-size: .88rem; }
+  @media (max-width: 720px) { .cards, .cards.c2 { grid-template-columns: 1fr; } }
+
+  .ex2 { display: grid; grid-template-columns: 1.3fr auto 1fr; gap: 12px; align-items: center; margin: 12px 0; }
+  .ex2 .arr { font-size: 1.6rem; color: var(--muted); text-align: center; }
+  .ex2 > div { min-width: 0; }
+  .ex2 .cap { font-size: .85rem; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+  @media (max-width: 640px) { .ex2 { grid-template-columns: 1fr; } .ex2 .arr { transform: rotate(-90deg); } }
+
+  .check { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+  .check p { margin: 0 0 8px; }
+  .check .opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .check .fb { margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: .93rem; display: none; }
+  .check .fb.on { display: block; }
+  .check .fb.ok { background: var(--goodbg); } .check .fb.no { background: var(--badbg); }
+
+  button { font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; border: 0; border-radius: 7px;
+    padding: 7px 14px; background: var(--accent); color: var(--paper); }
+  button.ok { background: #2e8b57; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  button.warnbtn { background: #b8860b; color: #fff; }
+  button:disabled { opacity: .55; cursor: default; }
+  button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .labbox { border: 2px solid var(--accent); border-radius: 12px; padding: 16px 18px; }
+  .labbox h3 { color: var(--head); }
+  .srcwrap { max-height: 300px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table.data { border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; width: 100%; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 3px 8px; text-align: center; }
+  table.data th { background: var(--soft); position: sticky; top: 0; z-index: 1; }
+  table.data td.edit { padding: 1px 3px; }
+  table.data input { width: 64px; font: inherit; text-align: center; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px;
+    background: #fff2cc; color: #1b2230; font-variant-numeric: tabular-nums; }
+  table.data tr.changed td { background: var(--stale); }
+  .areas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .area { border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+  .area > b { display: block; font-size: .92rem; margin-bottom: 4px; }
+  .area.f { border-color: var(--zf); background: var(--zfbg); } .area.f > b { color: var(--zf); }
+  .area.c { border-color: var(--zc); background: var(--zcbg); } .area.c > b { color: var(--zc); }
+  .area.r { border-color: var(--zr); background: var(--zrbg); } .area.r > b { color: var(--zr); }
+  .area.v { border-color: var(--zv); background: var(--zvbg); } .area.v > b { color: var(--zv); }
+  .area select { font: inherit; font-size: .9rem; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); width: 100%; margin-top: 4px; }
+  .area .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .fitems { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: .88rem; }
+  .fitems label { display: flex; gap: 4px; align-items: center; }
+  @media (max-width: 560px) { .areas { grid-template-columns: 1fr; } }
+  .ctrl { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 8px 0; font-size: .92rem; }
+  .ctrl label { font-weight: 700; display: flex; gap: 6px; align-items: center; }
+  .ctrl select { font: inherit; font-size: .9rem; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+  .stale { display: none; background: var(--stale); border: 2px solid var(--staleline); border-radius: 8px; padding: 8px 12px; margin: 8px 0; font-weight: 700; font-size: .93rem; }
+  .stale.on { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+  .tablewrap { overflow-x: auto; margin: 10px 0; }
+  table.pv { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: .92rem; }
+  table.pv th, table.pv td { border: 1px solid var(--line); padding: 4px 12px; }
+  table.pv th { background: var(--soft); text-align: center; white-space: nowrap; }
+  table.pv th.corner { text-align: right; }
+  table.pv td { text-align: center; }
+  table.pv td.lbl { text-align: right; font-weight: 600; white-space: nowrap; }
+  table.pv td.lbl.in1 { padding-inline-start: 30px; font-weight: 400; }
+  table.pv tr.grp td { background: var(--sub); font-weight: 700; }
+  table.pv tr.subt td { background: var(--sub); font-weight: 700; }
+  table.pv tr.gt td { background: var(--tot); font-weight: 800; border-top: 2px solid var(--accent); }
+  table.pv td.gtc { font-weight: 800; background: var(--tot); }
+  table.mini { border-collapse: collapse; font-size: .82rem; font-variant-numeric: tabular-nums; width: 100%; }
+  table.mini th, table.mini td { border: 1px solid var(--line); padding: 2px 6px; text-align: center; }
+  table.mini th { background: var(--soft); }
+  table.mini td.lbl { text-align: right; font-weight: 600; }
+  table.mini td.in1 { text-align: right; padding-inline-start: 18px; }
+  table.mini tr.subt td, table.mini tr.grp td { background: var(--sub); font-weight: 700; }
+  table.mini tr.gt td { background: var(--tot); font-weight: 800; }
+  .hint { color: var(--muted); font-size: .88rem; }
+  .note { color: var(--muted); font-size: .88rem; margin-top: 4px; }
+
+  details.src { background: var(--src); border: 2px solid var(--srcline); border-inline-start: 6px solid #d9a521; border-radius: 8px; margin: 22px 0; }
+  details.src summary { cursor: pointer; padding: 12px 16px; font-weight: 800; font-size: 1.1rem; color: var(--head); }
+  details.src .body { padding: 0 16px 12px; }
+
+  .q { margin: 28px 0; }
+  .q .num { font-weight: 800; color: var(--head); margin-inline-end: 6px; }
+  .q p { margin: 0 0 6px; }
+  .pts { color: var(--muted); font-size: .85rem; display: block; margin-top: 2px; }
+  .tag { display: inline-block; font-size: .78rem; font-weight: 700; padding: 1px 10px; border-radius: 999px; margin-inline-end: 6px; }
+  .tag.whatif { background: #fde8d4; color: #8a3b0b; }
+  .tag.lab { background: #dbe9f8; color: #12395c; }
+  textarea { width: 100%; min-height: 90px; font: inherit; font-size: .95rem; padding: 8px 10px; resize: vertical;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  textarea.short { min-height: 56px; }
+
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .who { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 14px; }
+  .who label { font-weight: 700; font-size: .95rem; display: flex; flex-direction: column; gap: 4px; }
+  .who input { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  .who input.err { border-color: #c0392b; box-shadow: 0 0 0 2px #f5c6c0; }
+  @media (max-width: 520px) { .who { grid-template-columns: 1fr; } }
+  .submitbox h2 { margin-top: 0; }
+  .submitbox .note { color: var(--muted); font-size: .9rem; }
+  button.big { font-size: 1.05rem; padding: 10px 28px; }
+  .msg { font-weight: 700; min-height: 1.4em; margin: 12px 0 0; }
+  .msg.ok { color: #2e7d4f; } .msg.bad { color: #c0392b; } .msg.warn { color: #a05a00; }
+  .dl { display: inline-block; background: #217346; color: #fff; text-decoration: none; font-weight: 700; padding: 10px 22px; border-radius: 8px; margin: 6px 0 4px; }
+  .steps { margin: 8px 0 12px; padding-inline-start: 1.3em; } .steps li { margin-bottom: 4px; }
+  .sub { font-size: 1.15rem; color: var(--head); margin: 26px 0 4px; border-bottom: 2px solid var(--soft); padding-bottom: 4px; }
+  input[type=text].nbox { font: inherit; font-size: .95rem; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); width: 100%;
+    direction: ltr; text-align: center; font-variant-numeric: tabular-nums; background: #fff2cc; }
+  select.sbox { font: inherit; font-size: .95rem; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); width: 100%; background: #fff2cc; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) input.nbox, :root:not([data-theme="light"]) select.sbox { background: #3a3420; } }
+  :root[data-theme="dark"] input.nbox, :root[data-theme="dark"] select.sbox { background: #3a3420; }
+  .scen { display: grid; gap: 8px; }
+  .scen label { display: grid; grid-template-columns: 1fr 240px; gap: 10px; align-items: center; font-size: .95rem; min-width: 0; }
+  @media (max-width: 560px) { .scen label { grid-template-columns: 1fr; gap: 4px; } }
+  .f { display: grid; gap: 10px; } .f.c4 { grid-template-columns: repeat(4, 1fr); } .f.c3 { grid-template-columns: repeat(3, 1fr); } .f.c2 { grid-template-columns: repeat(2, 1fr); }
+  .f label { font-weight: 700; font-size: .88rem; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  @media (max-width: 640px) { .f.c4, .f.c3 { grid-template-columns: 1fr 1fr; } .paper { padding: 18px 14px; } }
+  @media (max-width: 420px) { .f.c2 { grid-template-columns: 1fr; } }
+  .mark { display: block; font-size: .78rem; font-weight: 700; min-height: 1em; margin-top: 2px; }
+  .mark.ok { color: var(--good); } .mark.no { color: #c0392b; }
+  .okc { border-color: var(--good) !important; box-shadow: 0 0 0 2px var(--goodbg); background: #c6efce !important; color: #14532d !important; font-weight: 700; }
+  .noc { border-color: #c0392b !important; box-shadow: 0 0 0 2px var(--badbg); background: #ffc7ce !important; color: #7f1d1d !important; }
+  body:not(.submitted) .mark { display: none; }
+  code { direction: ltr; unicode-bidi: isolate; font-family: Consolas, "Courier New", monospace; background: var(--soft); padding: 1px 6px; border-radius: 4px; }
+  .score { font-size: 1.05rem; font-weight: 800; color: var(--head); margin-top: 8px; }
+
+  details.ans { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+  details.ans summary { cursor: pointer; padding: 6px 12px; font-weight: 700; font-size: .92rem; color: var(--accent); list-style: none; }
+  details.ans summary::-webkit-details-marker { display: none; }
+  details.ans summary::before { content: "◀ "; font-size: .75rem; }
+  details.ans[open] summary::before { content: "▼ "; }
+  details.ans summary .hide { display: none; }
+  details.ans[open] summary .hide { display: inline; }
+  details.ans[open] summary .show { display: none; }
+  details.ans .a { padding: 0 14px 10px; font-size: .95rem; }
+  details.ans .a p { margin: 0 0 6px; } details.ans .a ul { margin: 0 0 6px; padding-inline-start: 1.2em; }
+  body:not(.submitted) details.ans { display: none; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media print {
+    body { background: #fff; } main { padding: 0; } .paper { border: 0; }
+    .tools, button, .labbox .areas, .labbox .ctrl { display: none; } details.ans { display: none; } textarea { border-color: #999; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<div class="paper">
+  <h1>טבלת ציר (PIVOT): איך מסכמים טבלה גדולה בכמה לחיצות</h1>
+  <p>הדף בנוי מארבעה חלקים: <b>חלק א'</b> הוא הסבר קצר עם שאלות בדיקה, <b>חלק ב'</b> הוא מעבדה שבה בונים טבלת ציר בעצמכם, <b>חלק ג'</b> הוא שאלות על המעבדה, ו<b>חלק ד'</b> הוא משימת Excel. בסוף הדף לוחצים פעם אחת על ״הגשה״, וכל התשובות נשלחות יחד.</p>
+  <p>התשובות נשמרות בדפדפן תוך כדי כתיבה, כך שאפשר לסגור את הדף ולחזור אליו מאותו מחשב.</p>
+  <p class="fict">כל הנתונים והדמויות בדויים ונבנו לצורכי לימוד.</p>
+  <div class="who">
+    <label>שם מלא<input type="text" id="stName" autocomplete="name" placeholder="שם פרטי ושם משפחה"></label>
+    <label>כיתה<input type="text" id="stClass" placeholder="למשל י׳2"></label>
+  </div>
+</div>
+
+<!-- ===================== חלק א: הסבר ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק א': מה זה טבלת ציר, ואיך בונים אותה נכון?</b></div>
+
+  <h2>טבלה ארוכה, שאלה קצרה</h2>
+  <p>מועצת התלמידים מפעילה דוכן בהפסקות, ומוכרת שתייה, כריכים, חטיפים ופירות. כל מכירה נרשמת כשורה בטבלה: מספר קבלה, יום, שכבה, מי מכר, מה נמכר, כמות וסכום. אחרי שבוע יש בטבלה עשרות שורות, ואחרי חודש מאות.</p>
+  <p>עכשיו המועצה שואלת: <b>כמה כסף נכנס בכל יום?</b> אפשר לחבר ידנית, אבל זה ארוך ומועד לטעויות. <span class="term">טבלת ציר</span> עושה את זה בשבילנו: היא מקבצת את השורות לפי מה שבחרנו, ומחשבת לכל קבוצה סכום, ממוצע או ספירה.</p>
+  <div class="flow">
+    <div class="box"><b>טבלת מקור</b>שורה לכל מכירה.<br><small>24 קבלות</small></div>
+    <div class="arr">←</div>
+    <div class="box"><b>בוחרים שדות</b>מה בשורות, מה בעמודות, מה מחשבים.<br><small>״יום״ בשורות, ״סכום״ בערכים</small></div>
+    <div class="arr">←</div>
+    <div class="box"><b>טבלה מסכמת</b>שורה לכל קבוצה, ושורת סכום כולל.<br><small>5 שורות, אחת לכל יום</small></div>
+  </div>
+
+  <div class="ex2">
+    <div><div class="cap">טבלת המקור (חלק ממנה)</div>
+      <table class="mini"><tr><th>קבלה</th><th>יום</th><th>מוצר</th><th>סכום</th></tr>
+        <tr><td>1001</td><td>א</td><td>שתייה</td><td>16</td></tr><tr><td>1002</td><td>א</td><td>כריך</td><td>15</td></tr>
+        <tr><td>1003</td><td>ב</td><td>חטיף</td><td>6</td></tr><tr><td>1004</td><td>ב</td><td>שתייה</td><td>8</td></tr>
+        <tr><td>1005</td><td>ב</td><td>פרי</td><td>12</td></tr></table></div>
+    <div class="arr">←</div>
+    <div><div class="cap">טבלת ציר: ״יום״ בשורות, סכום של ״סכום״</div>
+      <table class="mini"><tr><th>תוויות שורה</th><th>סכום של סכום</th></tr>
+        <tr><td class="lbl">א</td><td>31</td></tr><tr><td class="lbl">ב</td><td>26</td></tr>
+        <tr class="gt"><td class="lbl">סכום כולל</td><td>57</td></tr></table></div>
+  </div>
+
+  <h2>ארבעת האזורים של טבלת הציר</h2>
+  <p>כשיוצרים טבלת ציר ב-Excel נפתחת חלונית עם רשימת השדות (הכותרות של טבלת המקור), ומתחתיה ארבעה אזורים. גוררים כל שדה לאזור המתאים:</p>
+  <div class="cards c2">
+    <div class="c zr"><h3>שורות</h3><p>כל ערך שונה בשדה הופך לשורה. כאן שמים את מה שרוצים לקבץ לפיו.</p><p class="eg">״יום״ בשורות: שורה לכל יום.</p></div>
+    <div class="c zc"><h3>עמודות</h3><p>כמו שורות, אבל לרוחב. משמש כשרוצים לפרק לפי שני דברים בבת אחת.</p><p class="eg">״מוצר״ בשורות ו״שכבה״ בעמודות: כמה מכרו מכל מוצר לכל שכבה.</p></div>
+    <div class="c zv"><h3>ערכים</h3><p>מה מחשבים לכל קבוצה. בדרך כלל שדה של מספרים, כמו סכום או כמות.</p><p class="eg">״סכום (₪)״ בערכים: כמה כסף נכנס בכל קבוצה.</p></div>
+    <div class="c zf"><h3>מסננים</h3><p>מסתירים חלק מהשורות של טבלת המקור, כך שהחישוב נעשה רק על מה שבחרנו.</p><p class="eg">״יום״ במסננים, בוחרים רק את ימים א-ב: הסכומים הם רק של שני הימים האלה.</p></div>
+  </div>
+
+  <h2>מה שמים בערכים, ואיך מחשבים?</h2>
+  <p>אחרי שגוררים שדה לערכים, בוחרים איך לסכם אותו (לחיצה ימנית על מספר ← <span class="menu">סכם ערכים לפי</span>):</p>
+  <div class="cards">
+    <div class="c zv"><h3>סכום</h3><p>מחבר את כל הערכים בקבוצה.</p><p class="eg">כמה כסף נכנס ביום ב'?</p></div>
+    <div class="c zv"><h3>ממוצע</h3><p>מחבר ומחלק במספר השורות בקבוצה.</p><p class="eg">כמה, בממוצע, שילם תלמיד י״ב בקנייה אחת?</p></div>
+    <div class="c zv"><h3>ספירה</h3><p>סופר כמה שורות יש בקבוצה, בלי להתייחס למספר שבתוכן.</p><p class="eg">כמה קבלות מכרה תמר?</p></div>
+  </div>
+  <div class="key warn">
+    <p><b>זהירות: לא כל מספר הוא כמות.</b> ״מספר קבלה״, ״מספר חשבון״ ותעודת זהות הם <b>מזהים</b>. אין שום משמעות לסכום של מספרי קבלות. אם רוצים לדעת <i>כמה</i> קבלות יש, שמים את השדה בערכים ובוחרים <b>ספירה</b>.</p>
+  </div>
+
+  <h2>טבלת מקור תקינה</h2>
+  <p>טבלת הציר טובה רק כמו הנתונים שהיא מקבלת. לפני שבונים אותה, בודקים חמישה דברים:</p>
+  <div class="cards">
+    <div class="c b"><h3>כותרת לכל עמודה</h3><p>שורה ראשונה עם שם לכל עמודה, בלי כותרות ריקות. שם העמודה הופך לשם השדה.</p></div>
+    <div class="c b"><h3>בלי תאים ממוזגים</h3><p>בתא ממוזג רק התא הראשון מכיל ערך. שאר השורות ייחשבו ״ריקות״ וייספרו בנפרד.</p></div>
+    <div class="c b"><h3>בלי תאים ריקים</h3><p>שורה עם תא ריק תופיע בקבוצה ״(ריק)״, והסכומים של הקבוצות האמיתיות יחסרו.</p></div>
+    <div class="c b"><h3>ערכים אחידים</h3><p>״נועה״ ו״נועה ״ (עם רווח) הם שני ערכים שונים, ויקבלו שתי שורות. כך גם שגיאות כתיב.</p></div>
+    <div class="c b"><h3>בלי שורת סיכום</h3><p>שורת ״סה״כ״ בתוך הנתונים תיספר כאילו הייתה עוד קבלה, והסכום הכולל יוכפל.</p></div>
+    <div class="c"><h3>טיפ: להפוך לטבלה</h3><p>סמנו תא בנתונים ← <span class="menu">הוספה ← טבלה</span> (Ctrl+T). כך שורות חדשות ייכנסו לטבלת הציר ברענון הבא.</p></div>
+  </div>
+
+  <h2>רענון</h2>
+  <div class="key">
+    <p>טבלת ציר <b>לא מתעדכנת לבד</b>. ברגע שיוצרים אותה, Excel שומר עותק של הנתונים, ועובד עליו. אם משנים מספר בטבלת המקור, טבלת הציר ממשיכה להציג את המספר הישן.</p>
+    <p>כדי לעדכן: לוחצים על טבלת הציר ← <span class="menu">ניתוח PivotTable ← רענן</span> (או לחיצה ימנית ← רענן, או Alt+F5). <span class="menu">רענן הכל</span> (Ctrl+Alt+F5) מעדכן את כל טבלאות הציר בקובץ.</p>
+  </div>
+
+  <h2>בדקו את עצמכם</h2>
+  <p>בחרו את התשובה הנכונה. השאלות האלה לא נשלחות למורה.</p>
+  <div id="checks"></div>
+</div>
+
+<!-- ===================== חלק ב: מעבדה ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ב': מעבדת טבלת הציר</b></div>
+  <p>כאן אפשר לבנות טבלת ציר על נתוני שבוע אחד בדוכן: 24 קבלות. בחרו שדות בארבעת האזורים, וטבלת הציר מתחת תשתנה. המעבדה עובדת כמו Excel, כולל הצורך ברענון.</p>
+  <div class="labbox">
+    <h3>טבלת המקור</h3>
+    <p class="hint">את הסכום (בצהוב) אפשר לשנות, כדי לבדוק מה קורה לטבלת הציר. נשתמש בזה בשאלה 5.</p>
+    <div class="srcwrap"><table class="data" id="srcTable"></table></div>
+    <div class="ctrl"><button type="button" class="ghost" id="resetData">איפוס הנתונים</button><span class="hint">מחזיר את כל הסכומים לערכים המקוריים ומרענן.</span></div>
+
+    <h3>שדות טבלת הציר</h3>
+    <div class="areas">
+      <div class="area f"><b>מסננים</b>
+        <select id="fField" aria-label="שדה במסננים"></select>
+        <div class="fitems" id="fItems"></div></div>
+      <div class="area c"><b>עמודות</b>
+        <select id="cField" aria-label="שדה בעמודות"></select></div>
+      <div class="area r"><b>שורות</b>
+        <select id="rField1" aria-label="שדה בשורות"></select></div>
+      <div class="area v"><b>ערכים</b>
+        <div class="row2"><select id="vField" aria-label="שדה בערכים"></select><select id="vAgg" aria-label="סכם ערכים לפי">
+          <option value="sum">סכום</option><option value="avg">ממוצע</option><option value="count">ספירה</option></select></div></div>
+    </div>
+    <p class="hint">שדה יכול להיות רק באזור אחד. אם תבחרו שדה שכבר נמצא באזור אחר, הוא יעבור לאזור החדש, כמו ב-Excel.</p>
+
+    <div class="stale" id="stale" role="status"><span>⚠ נתוני המקור השתנו, אבל טבלת הציר עדיין מציגה את הנתונים מהרענון האחרון.</span><button type="button" class="warnbtn" id="refreshBtn">רענון</button></div>
+    <h3>טבלת הציר</h3>
+    <div class="tablewrap"><table class="pv" id="pivot"></table></div>
+    <p class="hint" id="pvNote"></p>
+  </div>
+</div>
+
+<!-- ===================== חלק ג: שאלות על המעבדה ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ג': שאלות על המעבדה</b> (40 נקודות) · עובדים עם המעבדה שבחלק ב'</div>
+  <p class="hint">בשאלות 1 עד 4 עובדים על הנתונים המקוריים. אם שיניתם סכומים, לחצו קודם על ״איפוס הנתונים״. בשאלות הבחירה, התשובה נצבעת בירוק כשהיא נכונה.</p>
+
+  <div class="q" data-a="g1">
+    <p><span class="num">1.</span><span class="tag lab">מעבדה</span>שימו את ״יום״ בשורות ואת ״סכום (₪)״ בערכים, עם <b>סכום</b>. בשאר האזורים בחרו ״ללא״.
+      <span class="pts">(6 נקודות)</span></p>
+    <div class="f c2">
+      <label>כמה כסף נכנס ביום ג'?<input type="text" class="nbox" data-col="ג1 יום ג" data-key="L.dayC"></label>
+      <label>מה הסכום הכולל של השבוע?<input type="text" class="nbox" data-col="ג1 סכום כולל" data-key="L.total"></label>
+    </div>
+  </div>
+
+  <div class="q" data-a="g2">
+    <p><span class="num">2.</span><span class="tag lab">מעבדה</span>סכום, ממוצע וספירה. <span class="pts">(12 נקודות)</span></p>
+    <p>א. שימו את ״שכבה״ בשורות, ושנו את הערכים ל<b>ממוצע</b>. ב. שימו את ״מוכר/ת״ בשורות, ושנו ל<b>ספירה</b>.</p>
+    <div class="f c2">
+      <label>א. מה הסכום הממוצע של קבלה בשכבה יב?<input type="text" class="nbox" data-col="ג2 ממוצע יב" data-key="L.avgYB"></label>
+      <label>ב. כמה קבלות מכרה תמר?<input type="text" class="nbox" data-col="ג2 ספירה תמר" data-key="L.cntTamar"></label>
+    </div>
+    <p style="margin-top:12px">ג. מה צריך לבחור ב״סכם ערכים לפי״ כדי לענות על כל שאלה?</p>
+    <div class="scen">
+      <label><span>1. כמה כסף נכנס לדוכן ביום ד'?</span><select class="sbox" data-col="ג2 תרחיש 1" data-ans="סכום"><option value=""></option><option>סכום</option><option>ממוצע</option><option>ספירה</option></select></label>
+      <label><span>2. כמה פעמים קנו תלמידי שכבה ט' בדוכן?</span><select class="sbox" data-col="ג2 תרחיש 2" data-ans="ספירה"><option value=""></option><option>סכום</option><option>ממוצע</option><option>ספירה</option></select></label>
+      <label><span>3. כמה משלם בדרך כלל תלמיד בקנייה אחת?</span><select class="sbox" data-col="ג2 תרחיש 3" data-ans="ממוצע"><option value=""></option><option>סכום</option><option>ממוצע</option><option>ספירה</option></select></label>
+      <label><span>4. כמה יחידות (פריטים) נמכרו מכל מוצר? (השדה בערכים: ״כמות״)</span><select class="sbox" data-col="ג2 תרחיש 4" data-ans="סכום"><option value=""></option><option>סכום</option><option>ממוצע</option><option>ספירה</option></select></label>
+    </div>
+  </div>
+
+  <div class="q" data-a="g3">
+    <p><span class="num">3.</span><span class="tag lab">מעבדה</span>שימו בערכים את ״מספר קבלה״ עם <b>סכום</b> (בשורות: ״ללא״). <span class="pts">(7 נקודות)</span></p>
+    <div class="f c2"><label>איזה מספר מופיע בסכום הכולל?<input type="text" class="nbox" data-col="ג3 סכום מספרי קבלה" data-key="L.sumIds"></label></div>
+    <div class="scen" style="margin-top:10px">
+      <label><span>מה המשמעות של המספר הזה?</span><select class="sbox" data-col="ג3 משמעות" data-ans="אין לו משמעות"><option value=""></option><option>כמה קבלות היו בשבוע</option><option>כמה כסף נכנס בשבוע</option><option>אין לו משמעות</option></select></label>
+      <label><span>איזו דרך סיכום כן מתאימה לשדה ״מספר קבלה״?</span><select class="sbox" data-col="ג3 דרך מתאימה" data-ans="ספירה"><option value=""></option><option>סכום</option><option>ממוצע</option><option>ספירה</option></select></label>
+    </div>
+  </div>
+
+  <div class="q" data-a="g4">
+    <p><span class="num">4.</span><span class="tag lab">מעבדה</span>שימו את ״מוצר״ בשורות, את ״שכבה״ בעמודות ואת ״סכום (₪)״ בערכים, עם סכום. <span class="pts">(7 נקודות)</span></p>
+    <div class="f c2">
+      <label>כמה כסף נכנס מכריכים שנמכרו לשכבה יא?<input type="text" class="nbox" data-col="ג4 כריך יא" data-key="L.sandYA"></label>
+      <label>החליפו: ״שכבה״ בשורות ו״מוצר״ בעמודות. מה המספר של כריך ו-יא עכשיו?<input type="text" class="nbox" data-col="ג4 כריך יא אחרי החלפה" data-key="L.sandYA"></label>
+    </div>
+    <div class="scen" style="margin-top:10px">
+      <label><span>מה השתנה כשהחלפתם בין השורות לעמודות?</span><select class="sbox" data-col="ג4 מה השתנה" data-ans="רק הסידור, המספרים נשארו"><option value=""></option><option>המספרים השתנו</option><option>רק הסידור, המספרים נשארו</option><option>הסכום הכולל השתנה</option></select></label>
+    </div>
+  </div>
+
+  <div class="q" data-a="g5">
+    <p><span class="num">5.</span><span class="tag lab">ניסוי</span>לחצו ״איפוס הנתונים״. שימו את ״יום״ בשורות ואת ״סכום (₪)״ בערכים, עם סכום. עכשיו, בטבלת המקור, שנו את הסכום של קבלה <b>1010</b> מ-12 ל-<b>60</b>. <span class="pts">(8 נקודות)</span></p>
+    <div class="f c2">
+      <label>הסכום הכולל בטבלת הציר <b>לפני</b> שלחצתם ״רענון״<input type="text" class="nbox" data-col="ג5 לפני רענון" data-key="L.refBefore"></label>
+      <label>הסכום הכולל <b>אחרי</b> ״רענון״<input type="text" class="nbox" data-col="ג5 אחרי רענון" data-key="L.refAfter"></label>
+    </div>
+    <div class="scen" style="margin-top:10px">
+      <label><span>למה טבלת הציר לא השתנתה מיד?</span><select class="sbox" data-col="ג5 למה צריך רענון" data-ans="היא עובדת על עותק של הנתונים, ומתעדכנת רק ברענון"><option value=""></option><option>יש תקלה במעבדה</option><option>היא עובדת על עותק של הנתונים, ומתעדכנת רק ברענון</option><option>צריך לבנות טבלת ציר חדשה אחרי כל שינוי</option></select></label>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== חלק ד: Excel ===================== -->
+<div class="paper">
+  <div class="parthead"><b>חלק ד': משימת Excel, מכירות הדוכן</b> (60 נקודות)</div>
+  <p>בקובץ יש 120 קבלות מהדוכן. בונים חמש טבלאות ציר לפי ההוראות שבגיליון ״הוראות״, ומעתיקים לכאן את התשובות. כל שלב בקובץ מתאים לסעיף כאן.</p>
+  <a class="dl" href="pivot_excel.xlsx" download>הורדת קובץ ה-Excel</a>
+  <ol class="steps hint">
+    <li>מספרים עשרוניים: מעגלים ל-2 ספרות אחרי הנקודה (למשל 15.57). אפשר לכתוב גם עם פסיק.</li>
+    <li>כותבים מספרים בלי ₪ ובלי פסיק של אלפים (למשל 2177).</li>
+  </ol>
+
+  <h3 class="sub">ד1. כמה כסף נכנס מכל מוצר <span class="pts" style="display:inline">(12 נקודות)</span></h3>
+  <div class="q" data-a="x1">
+    <div class="f c4">
+      <label>חטיף<input type="text" class="nbox" data-col="ד1 חטיף" data-key="K.p.חטיף"></label>
+      <label>כריך<input type="text" class="nbox" data-col="ד1 כריך" data-key="K.p.כריך"></label>
+      <label>פרי<input type="text" class="nbox" data-col="ד1 פרי" data-key="K.p.פרי"></label>
+      <label>שתייה<input type="text" class="nbox" data-col="ד1 שתייה" data-key="K.p.שתייה"></label>
+    </div>
+    <div class="f c2" style="margin-top:10px"><label>סכום כולל<input type="text" class="nbox" data-col="ד1 סכום כולל" data-key="K.total"></label></div>
+  </div>
+
+  <h3 class="sub">ד2. הקנייה הממוצעת בכל שכבה <span class="pts" style="display:inline">(12 נקודות)</span></h3>
+  <div class="q" data-a="x2">
+    <div class="f c4">
+      <label>ט<input type="text" class="nbox" data-col="ד2 ממוצע ט" data-key="K.g.ט"></label>
+      <label>י<input type="text" class="nbox" data-col="ד2 ממוצע י" data-key="K.g.י"></label>
+      <label>יא<input type="text" class="nbox" data-col="ד2 ממוצע יא" data-key="K.g.יא"></label>
+      <label>יב<input type="text" class="nbox" data-col="ד2 ממוצע יב" data-key="K.g.יב"></label>
+    </div>
+    <div class="f c2" style="margin-top:10px"><label>איזו אפשרות בחרתם ב״סכם ערכים לפי״?<select class="sbox" data-col="ד2 סכם לפי" data-key="K.aggAvg">
+      <option value=""></option><option>סכום</option><option>ממוצע</option><option>ספירה</option><option>מקסימום</option></select></label></div>
+  </div>
+
+  <h3 class="sub">ד3. מוצר מול שכבה <span class="pts" style="display:inline">(12 נקודות)</span></h3>
+  <div class="q" data-a="x3">
+    <div class="f c3">
+      <label>לאיזה אזור גררתם את ״שכבה״?<select class="sbox" data-col="ד3 אזור שכבה" data-key="K.areaGrade">
+        <option value=""></option><option>מסננים</option><option>עמודות</option><option>שורות</option><option>ערכים</option></select></label>
+      <label>כמה כסף נכנס משתייה לשכבה יא?<input type="text" class="nbox" data-col="ד3 שתייה יא" data-key="K.drinkYA"></label>
+      <label>אחרי המעבר לספירה: כמה קבלות של כריך היו?<input type="text" class="nbox" data-col="ד3 ספירת כריך" data-key="K.cntSand"></label>
+    </div>
+  </div>
+
+  <h3 class="sub">ד4. סינון: בלי תשלומים במזומן <span class="pts" style="display:inline">(12 נקודות)</span></h3>
+  <div class="q" data-a="x4">
+    <div class="f c4">
+      <label>איתי<input type="text" class="nbox" data-col="ד4 איתי" data-key="K.s.איתי"></label>
+      <label>ליה<input type="text" class="nbox" data-col="ד4 ליה" data-key="K.s.ליה"></label>
+      <label>נועה<input type="text" class="nbox" data-col="ד4 נועה" data-key="K.s.נועה"></label>
+      <label>עומר<input type="text" class="nbox" data-col="ד4 עומר" data-key="K.s.עומר"></label>
+    </div>
+    <div class="f c2" style="margin-top:10px"><label>לאיזה אזור גררתם את ״אמצעי תשלום״?<select class="sbox" data-col="ד4 אזור אמצעי תשלום" data-key="K.areaPay">
+      <option value=""></option><option>מסננים</option><option>עמודות</option><option>שורות</option><option>ערכים</option></select></label></div>
+  </div>
+
+  <h3 class="sub">ד5. כמה קבלות בכל אמצעי תשלום <span class="pts" style="display:inline">(12 נקודות)</span></h3>
+  <div class="q" data-a="x5">
+    <div class="f c2"><label>המספר בשורה ״ביט״ <b>לפני</b> שהחלפתם לספירה<input type="text" class="nbox" data-col="ד5 סכום מספרי קבלה ביט" data-key="K.sumIdsBit"></label></div>
+    <div class="f c3" style="margin-top:10px">
+      <label>מזומן<input type="text" class="nbox" data-col="ד5 מזומן" data-key="K.c.מזומן"></label>
+      <label>ביט<input type="text" class="nbox" data-col="ד5 ביט" data-key="K.c.ביט"></label>
+      <label>כרטיס אשראי<input type="text" class="nbox" data-col="ד5 כרטיס אשראי" data-key="K.c.כרטיס אשראי"></label>
+    </div>
+  </div>
+</div>
+
+<div class="paper submitbox">
+  <h2>הגשה</h2>
+  <p>בדקו שמילאתם שם, כיתה ותשובות בחלקים ג' ו-ד'. אחר כך לחצו על ״הגשה״, וכל התשובות יישלחו למורה.</p>
+  <p class="note">אחרי ההגשה יופיעו מתחת לכל סעיף כפתורים ״הצגת תשובה״, וליד כל תשובה יופיע ✔ או ✘.</p>
+  <div class="tools">
+    <button type="button" id="submitBtn" class="big">הגשה</button>
+    <button type="button" class="ghost" onclick="window.print()">הדפסה / שמירה כ-PDF</button>
+  </div>
+  <p id="submitMsg" class="msg" role="status" aria-live="polite"></p>
+  <p id="score" class="score"></p>
+</div>
+</main>
+
+<script>
+(function () {
+  // אם לא רוצים שהתלמידים יראו תשובות אחרי ההגשה, משנים ל-false
+  var SHOW_ANSWERS_AFTER_SUBMIT = true;
+  function ltr(s) { return '<span class="ltr">' + s + "</span>"; }
+  function r2(x) { return Math.round(x * 100) / 100; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // ---------- בדקו את עצמכם ----------
+  (function () {
+    var items = [
+      ["רוצים לדעת כמה כסף נכנס מכל מוצר. לאיזה אזור גוררים את ״מוצר״?", ["שורות", "ערכים", "מסננים"], 0,
+       "״מוצר״ הוא מה שמקבצים לפיו, ולכן הוא בשורות (או בעמודות). בערכים שמים את ״סכום (₪)״, כי אותו מחברים."],
+      ["רוצים לדעת כמה קבלות היו בכל יום. מה שמים בערכים?", ["סכום של ״מספר קבלה״", "ספירה של ״מספר קבלה״", "ממוצע של ״מספר קבלה״"], 1,
+       "ספירה סופרת שורות. סכום או ממוצע של מספרי קבלות הם מספרים חסרי משמעות, כי מספר קבלה הוא מזהה ולא כמות."],
+      ["בטבלת המקור השם ״ליה״ נכתב פעם אחת ״ליה ״ (עם רווח). מה יקרה בטבלת הציר כש״מוכר/ת״ בשורות?", ["שום דבר, Excel מתעלם מרווחים", "ליה תופיע בשתי שורות נפרדות", "תופיע הודעת שגיאה"], 1,
+       "בשביל Excel אלה שני ערכים שונים, ולכן הם מקבלים שתי שורות. הסכום של ליה מתפצל לשניים. צריך לתקן את הנתונים במקור."],
+      ["תיקנתם מספר בטבלת המקור, אבל טבלת הציר מציגה עדיין את הסכום הישן. מה עושים?", ["בונים טבלת ציר חדשה", "מרעננים את טבלת הציר", "מתקנים את המספר גם בטבלת הציר"], 1,
+       "טבלת ציר עובדת על עותק של הנתונים. רענון (Alt+F5, או ״רענן הכל״) מעדכן אותה לפי טבלת המקור. אי אפשר להקליד בתוך תאי הערכים של טבלת ציר."],
+      ["רוצים לראות רק את המכירות של ימים א' ו-ב', אבל בלי שורה נפרדת לכל יום. איפה שמים את ״יום״?", ["שורות", "עמודות", "מסננים"], 2,
+       "מסנן מוריד את השורות שלא בחרנו מהחישוב, בלי להוסיף שורות או עמודות לטבלה."]
+    ];
+    var box = document.getElementById("checks");
+    items.forEach(function (it, i) {
+      var d = document.createElement("div"); d.className = "check";
+      var h = "<p><b>" + (i + 1) + ".</b> " + it[0] + '</p><div class="opts">';
+      it[1].forEach(function (o, j) { h += '<button type="button" class="ghost" data-v="' + j + '">' + o + "</button>"; });
+      d.innerHTML = h + '</div><div class="fb" aria-live="polite"></div>';
+      var fb = d.querySelector(".fb");
+      Array.prototype.forEach.call(d.querySelectorAll("button"), function (b) {
+        b.addEventListener("click", function () {
+          var ok = +b.dataset.v === it[2];
+          fb.className = "fb on " + (ok ? "ok" : "no");
+          fb.innerHTML = (ok ? "✔ נכון. " : "✘ לא בדיוק. ") + it[3];
+        });
+      });
+      box.appendChild(d);
+    });
+  })();
+
+  // ---------- נתוני המעבדה ----------
+  var ORIG = [{"id": 1001, "day": "א", "grade": "ט", "seller": "ליה", "prod": "חטיף", "qty": 3, "amt": 18}, {"id": 1002, "day": "א", "grade": "ט", "seller": "תמר", "prod": "כריך", "qty": 2, "amt": 30}, {"id": 1003, "day": "א", "grade": "ט", "seller": "תמר", "prod": "פרי", "qty": 2, "amt": 8}, {"id": 1004, "day": "א", "grade": "י", "seller": "עומר", "prod": "שתייה", "qty": 3, "amt": 24}, {"id": 1005, "day": "א", "grade": "יב", "seller": "ליה", "prod": "שתייה", "qty": 1, "amt": 8}, {"id": 1006, "day": "ב", "grade": "ט", "seller": "תמר", "prod": "חטיף", "qty": 3, "amt": 18}, {"id": 1007, "day": "ב", "grade": "יא", "seller": "תמר", "prod": "שתייה", "qty": 1, "amt": 8}, {"id": 1008, "day": "ב", "grade": "ט", "seller": "ליה", "prod": "שתייה", "qty": 2, "amt": 16}, {"id": 1009, "day": "ב", "grade": "י", "seller": "תמר", "prod": "פרי", "qty": 3, "amt": 12}, {"id": 1010, "day": "ב", "grade": "ט", "seller": "עומר", "prod": "חטיף", "qty": 2, "amt": 12}, {"id": 1011, "day": "ג", "grade": "ט", "seller": "עומר", "prod": "כריך", "qty": 2, "amt": 30}, {"id": 1012, "day": "ג", "grade": "י", "seller": "ליה", "prod": "פרי", "qty": 3, "amt": 12}, {"id": 1013, "day": "ג", "grade": "יא", "seller": "ליה", "prod": "כריך", "qty": 2, "amt": 30}, {"id": 1014, "day": "ג", "grade": "יא", "seller": "עומר", "prod": "פרי", "qty": 3, "amt": 12}, {"id": 1015, "day": "ג", "grade": "יב", "seller": "תמר", "prod": "שתייה", "qty": 1, "amt": 8}, {"id": 1016, "day": "ד", "grade": "יא", "seller": "ליה", "prod": "חטיף", "qty": 2, "amt": 12}, {"id": 1017, "day": "ד", "grade": "י", "seller": "עומר", "prod": "חטיף", "qty": 1, "amt": 6}, {"id": 1018, "day": "ד", "grade": "י", "seller": "עומר", "prod": "חטיף", "qty": 2, "amt": 12}, {"id": 1019, "day": "ד", "grade": "יב", "seller": "ליה", "prod": "פרי", "qty": 3, "amt": 12}, {"id": 1020, "day": "ד", "grade": "יב", "seller": "ליה", "prod": "חטיף", "qty": 3, "amt": 18}, {"id": 1021, "day": "ה", "grade": "יב", "seller": "תמר", "prod": "פרי", "qty": 3, "amt": 12}, {"id": 1022, "day": "ה", "grade": "י", "seller": "ליה", "prod": "חטיף", "qty": 3, "amt": 18}, {"id": 1023, "day": "ה", "grade": "יא", "seller": "עומר", "prod": "כריך", "qty": 2, "amt": 30}, {"id": 1024, "day": "ה", "grade": "יא", "seller": "ליה", "prod": "כריך", "qty": 1, "amt": 15}];
+  var FIELDS = [
+    { k: "id", n: "מספר קבלה", num: true }, { k: "day", n: "יום" }, { k: "grade", n: "שכבה" },
+    { k: "seller", n: "מוכר/ת" }, { k: "prod", n: "מוצר" }, { k: "qty", n: "כמות", num: true }, { k: "amt", n: "סכום (₪)", num: true }
+  ];
+  var FN = {}; FIELDS.forEach(function (f) { FN[f.k] = f.n; });
+  var ORDER = { day: ["א", "ב", "ג", "ד", "ה"], grade: ["ט", "י", "יא", "יב"] };
+  var data = ORIG.map(function (r) { return Object.assign({}, r); });
+  var cache = data.map(function (r) { return Object.assign({}, r); });
+
+  // טבלת המקור
+  var src = document.getElementById("srcTable");
+  function renderSrc() {
+    var h = "<tr>" + FIELDS.map(function (f) { return "<th>" + f.n + "</th>"; }).join("") + "</tr>";
+    data.forEach(function (r, i) {
+      var ch = r.amt !== ORIG[i].amt;
+      h += '<tr' + (ch ? ' class="changed"' : "") + ">" + FIELDS.map(function (f) {
+        if (f.k === "amt") return '<td class="edit"><input type="text" inputmode="numeric" data-i="' + i + '" value="' + r.amt + '" aria-label="סכום קבלה ' + r.id + '"></td>';
+        return "<td>" + esc(r[f.k]) + "</td>";
+      }).join("") + "</tr>";
+    });
+    src.innerHTML = h;
+  }
+  src.addEventListener("change", function (e) {
+    var t = e.target; if (!t.dataset || t.dataset.i == null) return;
+    var v = parseFloat(String(t.value).replace(",", "."));
+    if (isNaN(v)) { t.value = data[+t.dataset.i].amt; return; }
+    var i = +t.dataset.i; data[i].amt = v; t.value = v;
+    t.closest("tr").classList.toggle("changed", v !== ORIG[i].amt); updStale();
+  });
+  function isStale() { return data.some(function (r, i) { return r.amt !== cache[i].amt; }); }
+  function updStale() { document.getElementById("stale").classList.toggle("on", isStale()); }
+  document.getElementById("refreshBtn").onclick = function () { cache = data.map(function (r) { return Object.assign({}, r); }); updStale(); renderPivot(); };
+  document.getElementById("resetData").onclick = function () {
+    data = ORIG.map(function (r) { return Object.assign({}, r); }); cache = data.map(function (r) { return Object.assign({}, r); });
+    renderSrc(); updStale(); renderPivot();
+  };
+
+  // בחירת שדות
+  var SEL = { f: "fField", c: "cField", r1: "rField1", v: "vField" };
+  function fillSel(id, opts, def) {
+    var s = document.getElementById(id);
+    s.innerHTML = '<option value="">ללא</option>' + opts.map(function (f) { return '<option value="' + f.k + '">' + f.n + "</option>"; }).join("");
+    s.value = def;
+  }
+  var CATS = FIELDS.filter(function (f) { return !f.num; });
+  fillSel("fField", CATS, ""); fillSel("cField", CATS, ""); fillSel("rField1", CATS, "day"); fillSel("vField", FIELDS, "amt");
+  var fChecked = {};
+  function itemsOf(k, rows) {
+    var u = []; rows.forEach(function (r) { if (u.indexOf(r[k]) < 0) u.push(r[k]); });
+    if (ORDER[k]) return ORDER[k].filter(function (x) { return u.indexOf(x) >= 0; });
+    return u.sort(function (a, b) { return String(a).localeCompare(String(b), "he"); });
+  }
+  function renderFItems() {
+    var k = document.getElementById("fField").value, box = document.getElementById("fItems");
+    if (!k) { box.innerHTML = ""; return; }
+    if (!fChecked[k]) { fChecked[k] = {}; itemsOf(k, cache).forEach(function (x) { fChecked[k][x] = true; }); }
+    box.innerHTML = itemsOf(k, cache).map(function (x) {
+      return '<label><input type="checkbox" data-x="' + esc(x) + '"' + (fChecked[k][x] ? " checked" : "") + ">" + esc(x) + "</label>";
+    }).join("");
+  }
+  document.getElementById("fItems").addEventListener("change", function (e) {
+    var k = document.getElementById("fField").value; fChecked[k][e.target.dataset.x] = e.target.checked; renderPivot();
+  });
+  Object.keys(SEL).forEach(function (a) {
+    document.getElementById(SEL[a]).addEventListener("change", function () {
+      var v = this.value;
+      if (v) Object.keys(SEL).forEach(function (b) {
+        if (b !== a && b !== "v" && a !== "v") { var o = document.getElementById(SEL[b]); if (o.value === v) o.value = ""; }
+      });
+      if (a === "f") renderFItems();
+      renderPivot();
+    });
+  });
+  ["vAgg"].forEach(function (id) { document.getElementById(id).addEventListener("change", renderPivot); });
+
+  // חישוב טבלת הציר
+  var AGGN = { sum: "סכום של ", avg: "ממוצע של ", count: "ספירה של " };
+  function aggr(rows, vk, ag) {
+    if (ag === "count") return rows.length;
+    if (!rows.length) return null;
+    var s = 0; rows.forEach(function (r) { s += +r[vk]; });
+    return ag === "avg" ? s / rows.length : s;
+  }
+  function fmtv(v, ag) { if (v == null) return ""; return ag === "avg" ? String(r2(v)) : String(r2(v)); }
+  function renderPivot() {
+    var fk = document.getElementById("fField").value, ck = document.getElementById("cField").value,
+        r1 = document.getElementById("rField1").value, vk = document.getElementById("vField").value,
+        ag = document.getElementById("vAgg").value;
+    var rows = cache.filter(function (r) { return !fk || !fChecked[fk] || fChecked[fk][r[fk]]; });
+    var t = document.getElementById("pivot"), note = document.getElementById("pvNote");
+    if (!vk) { t.innerHTML = '<tr><td class="hint" style="padding:10px 16px">בחרו שדה באזור ״ערכים״ כדי לראות חישוב.</td></tr>'; note.textContent = ""; return; }
+    var vname = AGGN[ag] + FN[vk];
+    var cols = ck ? itemsOf(ck, rows) : [];
+    function cells(sub) {
+      var h = "";
+      if (ck) cols.forEach(function (c) { h += "<td>" + fmtv(aggr(sub.filter(function (r) { return r[ck] === c; }), vk, ag), ag) + "</td>"; });
+      h += '<td' + (ck ? ' class="gtc"' : "") + ">" + fmtv(aggr(sub, vk, ag), ag) + "</td>";
+      return h;
+    }
+    var h = "";
+    if (ck) {
+      h += '<tr><th class="corner">' + vname + '</th><th colspan="' + (cols.length + 1) + '">תוויות עמודה</th></tr>';
+      h += '<tr><th class="corner">' + (r1 ? "תוויות שורה" : "") + "</th>" + cols.map(function (c) { return "<th>" + esc(c) + "</th>"; }).join("") + "<th>סכום כולל</th></tr>";
+    } else {
+      h += "<tr>" + (r1 ? '<th class="corner">תוויות שורה</th>' : "") + "<th>" + vname + "</th></tr>";
+    }
+    if (r1) itemsOf(r1, rows).forEach(function (a) {
+      h += '<tr><td class="lbl">' + esc(a) + "</td>" + cells(rows.filter(function (r) { return r[r1] === a; })) + "</tr>";
+    });
+    h += '<tr class="gt">' + (r1 || ck ? '<td class="lbl">סכום כולל</td>' : "") + cells(rows) + "</tr>";
+    t.innerHTML = h;
+    var n = rows.length;
+    note.textContent = "טבלת הציר מחושבת על " + n + " מתוך " + cache.length + " קבלות" + (fk && n < cache.length ? " (חלק מהקבלות מוסתרות במסנן)." : ".") +
+      (ag === "avg" ? " ממוצעים מעוגלים ל-2 ספרות." : "");
+  }
+  renderSrc(); renderFItems(); renderPivot();
+
+  // ---------- תשובות ובדיקה ----------
+  var KEYS = { L: {"dayC": 92, "total": 381, "avgYB": 11.6, "cntTamar": 7, "sumIds": 24300, "sandYA": 75, "snackSub": 114, "refId": 1010, "refOld": 12, "refNew": 60, "refBefore": 381, "refAfter": 429}, K: {"total": 2177, "p": {"שתייה": 616, "כריך": 795, "חטיף": 546, "פרי": 220}, "g": {"ט": 17.87, "י": 17.36, "יא": 19.21, "יב": 18.37}, "drinkYA": 176, "cntSand": 28, "s": {"איתי": 325, "ליה": 206, "נועה": 350, "עומר": 315}, "c": {"מזומן": 51, "ביט": 47, "כרטיס אשראי": 22}, "sumIdsBit": 50083} };
+  KEYS.K.aggAvg = "ממוצע"; KEYS.K.areaGrade = "עמודות"; KEYS.K.areaPay = "מסננים";
+  function xkey(path) { return path.split(".").reduce(function (o, p) { return o == null ? o : o[p]; }, KEYS); }
+  function parseNum(s) { s = String(s).trim().replace(/\s/g, "").replace(/₪/g, "").replace(",", ".").replace("−", "-"); return s === "" || isNaN(+s) ? null : +s; }
+  function wantOf(inp) { return inp.dataset.ans != null ? inp.dataset.ans : xkey(inp.dataset.key); }
+  function isGood(inp) {
+    var want = wantOf(inp);
+    if (typeof want === "string") return inp.value.trim() === want;
+    var got = parseNum(inp.value); return got != null && Math.abs(got - want) <= 0.015;
+  }
+  // בחירות בחלק ג': נצבעות מיד
+  function instant(sel) {
+    var v = sel.value; sel.classList.remove("okc", "noc");
+    if (v) sel.classList.add(sel.value === sel.dataset.ans ? "okc" : "noc");
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("select[data-ans]"), function (s) { s.addEventListener("change", function () { instant(s); }); });
+  function checkNums() {
+    var ok = 0, tot = 0;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-key],[data-ans]"), function (inp) {
+      var want = wantOf(inp), good = isGood(inp);
+      tot++; if (good) ok++;
+      inp.classList.toggle("okc", good); inp.classList.toggle("noc", !good);
+      var m = inp.parentNode.querySelector(".mark");
+      if (!m) { m = document.createElement("span"); m.className = "mark"; inp.parentNode.appendChild(m); }
+      m.className = "mark " + (good ? "ok" : "no"); m.innerHTML = good ? "✔" : "✘ התשובה: " + (typeof want === "string" ? want : ltr(want));
+    });
+    document.getElementById("score").textContent = "תשובות נכונות: " + ok + " מתוך " + tot + ".";
+  }
+  function reveal() { if (!SHOW_ANSWERS_AFTER_SUBMIT) return; checkNums(); document.body.classList.add("submitted"); }
+
+  var L = KEYS.L, K = KEYS.K;
+  var ANSWERS = {
+    g1: "<p>יום ג': <b>" + L.dayC + "</b> ₪. הסכום הכולל של השבוע: <b>" + L.total + "</b> ₪. שורת ״סכום כולל״ נוספת לבד, ואין צורך לחבר.</p>",
+    g2: "<p>א. <b>" + L.avgYB + "</b> ₪ בממוצע לקבלה בשכבה יב. ב. תמר מכרה <b>" + L.cntTamar + "</b> קבלות.</p><ul><li>1. כמה כסף נכנס: <b>סכום</b>.</li><li>2. כמה פעמים קנו: <b>ספירה</b>, כי סופרים קבלות.</li><li>3. כמה משלמים בדרך כלל בקנייה אחת: <b>ממוצע</b>.</li><li>4. כמה יחידות נמכרו: <b>סכום</b> של ״כמות״. ספירה הייתה נותנת את מספר הקבלות, וקבלה אחת יכולה לכלול כמה יחידות.</li></ul>",
+    g3: "<p>יוצא <b>" + L.sumIds + "</b>, סכום של 24 מספרי קבלות. <b>אין לו משמעות</b>: מספר קבלה הוא מזהה (כמו מספר תעודת זהות), ולא כמות. מה שכן מתאים: <b>ספירה</b>, שאומרת כמה קבלות היו.</p>",
+    g4: "<p>כריכים לשכבה יא: <b>" + L.sandYA + "</b> ₪, גם לפני ההחלפה וגם אחריה. כשמחליפים בין השורות לעמודות, <b>רק הסידור משתנה</b>: מה שהיה שורה הופך לעמודה. המספרים והסכום הכולל נשארים בדיוק אותו דבר.</p>",
+    g5: "<p>לפני הרענון הסכום הכולל נשאר <b>" + L.refBefore + "</b> ₪. אחרי הרענון: <b>" + L.refAfter + "</b> ₪ (עלה ב-" + ltr("60 − " + L.refOld + " = " + (60 - L.refOld)) + ").</p><p>טבלת ציר עובדת על <b>עותק</b> של הנתונים, שנשמר כשיצרו אותה או כשרעננו אותה בפעם האחרונה. שינוי בטבלת המקור לא מגיע אליה עד שלוחצים ״רענון״. ב-Excel אין סימן אזהרה כמו במעבדה, ולכן חשוב לזכור לרענן.</p>",
+    x1: "<p>חטיף " + K.p["חטיף"] + ", כריך " + K.p["כריך"] + ", פרי " + K.p["פרי"] + ", שתייה " + K.p["שתייה"] + ". סכום כולל <b>" + K.total + "</b>.</p><p>״מוצר״ בשורות, ״סכום (₪)״ בערכים עם סכום.</p>",
+    x2: "<p>ט " + K.g["ט"] + ", י " + K.g["י"] + ", יא " + K.g["יא"] + ", יב " + K.g["יב"] + ". בוחרים <b>ממוצע</b> ב״סכם ערכים לפי״. כדי לעגל: לחיצה ימנית ← עיצוב מספר ← 2 מקומות עשרוניים.</p>",
+    x3: "<p>״שכבה״ <b>בעמודות</b> ו״מוצר״ בשורות. שתייה לשכבה יא: <b>" + K.drinkYA + "</b> ₪. אחרי המעבר לספירה, בעמודה ״סכום כולל״ בשורת כריך: <b>" + K.cntSand + "</b> קבלות.</p>",
+    x4: "<p>״אמצעי תשלום״ <b>במסננים</b>, ובוחרים ביט וכרטיס אשראי. איתי " + K.s["איתי"] + ", ליה " + K.s["ליה"] + ", נועה " + K.s["נועה"] + ", עומר " + K.s["עומר"] + ".</p><p>אם ״אמצעי תשלום״ בשורות או בעמודות, מקבלים סכום נפרד לכל אמצעי תשלום, ולא את שניהם יחד.</p>",
+    x5: "<p>לפני השינוי הופיע בשורת ביט <b>" + K.sumIdsBit + "</b>: סכום של מספרי קבלות, מספר חסר משמעות. Excel בוחר סכום אוטומטית לכל שדה של מספרים.</p><p>אחרי המעבר לספירה: מזומן " + K.c["מזומן"] + ", ביט " + K.c["ביט"] + ", כרטיס אשראי " + K.c["כרטיס אשראי"] + " (סך הכול 120 קבלות).</p>"
+  };
+  function buildAnswers() {
+    Array.prototype.forEach.call(document.querySelectorAll(".q[data-a]"), function (q) {
+      var html = ANSWERS[q.dataset.a]; if (!html) return;
+      var d = q.querySelector("details.ans");
+      if (!d) { d = document.createElement("details"); d.className = "ans"; q.appendChild(d); }
+      d.innerHTML = '<summary><span class="show">הצגת תשובה (נסו קודם לבד)</span><span class="hide">הסתרת התשובה</span></summary><div class="a">' + html + "</div>";
+    });
+  }
+  buildAnswers();
+
+  // ---------- שמירה בדפדפן ----------
+  var KEY = "pvtx2-answers", saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} }
+  [["stName", "_name"], ["stClass", "_cls"]].forEach(function (p) {
+    var inp = document.getElementById(p[0]); if (saved[p[1]]) inp.value = saved[p[1]];
+    inp.addEventListener("input", function () { saved[p[1]] = inp.value; persist(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-col]"), function (t) {
+    var k = "c:" + t.dataset.col; if (saved[k] != null) t.value = saved[k];
+    t.addEventListener(t.tagName === "SELECT" ? "change" : "input", function () { saved[k] = t.value; persist(); });
+    if (t.dataset.ans != null) instant(t);
+  });
+
+  // ---------- הגשה ----------
+  var SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzrJave6Aq3qf_kRFaUYVBTds_nRSeUYSlrct2G2n2OlKq0ZUDIKsxF6qBKJhbdYsXG1w/exec";
+  var QUIZ_NAME = "טבלת ציר PIVOT + Excel";
+  var SENT_KEY = "pvtx2-submitted";
+  var btn = document.getElementById("submitBtn"), msg = document.getElementById("submitMsg");
+  var nameEl = document.getElementById("stName"), clsEl = document.getElementById("stClass");
+  var confirmEmpty = false, confirmAgain = false;
+  function say(text, cls) { msg.textContent = text; msg.className = "msg " + (cls || ""); }
+  try { if (localStorage.getItem(SENT_KEY)) { reveal(); say("כבר הגשתם מהמחשב הזה ב-" + localStorage.getItem(SENT_KEY) + ". אפשר להגיש שוב, וההגשה תישמר כשורה נוספת.", "warn"); } } catch (e) {}
+  btn.addEventListener("click", function () {
+    var name = nameEl.value.trim(), cls = clsEl.value.trim();
+    nameEl.classList.toggle("err", !name); clsEl.classList.toggle("err", !cls);
+    if (!name || !cls) { say("כתבו שם מלא וכיתה בראש הדף לפני ההגשה.", "bad"); (name ? clsEl : nameEl).focus(); return; }
+    var answers = {}, empty = 0;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-col]"), function (t) {
+      answers[t.dataset.col] = t.value.trim(); if (!t.value.trim()) empty++;
+    });
+    if (empty && !confirmEmpty) { confirmEmpty = true; say("יש " + empty + " תיבות ריקות. כדי להגיש בכל זאת, לחצו שוב על ״הגשה״.", "warn"); return; }
+    var already = false; try { already = !!localStorage.getItem(SENT_KEY); } catch (e) {}
+    if (already && !confirmAgain) { confirmAgain = true; say("כבר הגשתם. כדי להגיש שוב, לחצו שוב על ״הגשה״.", "warn"); return; }
+    btn.disabled = true; say("שולח...", "");
+    fetch(SUBMIT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ quiz: QUIZ_NAME, name: name, cls: cls, answers: answers }) })
+      .then(function () {
+        var when = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+        try { localStorage.setItem(SENT_KEY, when); } catch (e) {}
+        reveal();
+        say("התשובות נשלחו בהצלחה (" + when + ")." + (SHOW_ANSWERS_AFTER_SUBMIT ? " עכשיו אפשר לפתוח את ״הצגת תשובה״ מתחת לכל סעיף." : ""), "ok");
+        confirmEmpty = false; confirmAgain = false; btn.disabled = false;
+      })
+      .catch(function () { btn.disabled = false; say("השליחה נכשלה. בדקו את החיבור לאינטרנט ונסו שוב. אם זה חוזר, הדפיסו את הדף ושמרו כ-PDF.", "bad"); });
+  });
+})();
+</script>
+</body>
+</html>
